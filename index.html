@@ -1715,7 +1715,7 @@ function VietlottDashTab({vietData,setVietData,vietSettings}){
   const [syncMsg,setSyncMsg]=useState('');
   const [lastSynced,setLastSynced]=useState(null);
   const totalFund=funds.filter(f=>(!f.type||f.type==='fund')).reduce((s,f)=>s+f.amount,0);
-  const totalSpent=funds.filter(f=>f.type==='ticket').reduce((s,f)=>s+f.amount,0);
+  const totalSpent=results.length*10000+funds.filter(f=>f.type==='ticket').reduce((s,f)=>s+f.amount,0);
   const net=totalFund-totalSpent;
   const latest645=results.filter(r=>r.type==='645').sort((a,b)=>b.date.localeCompare(a.date))[0];
   const latest655=results.filter(r=>r.type==='655').sort((a,b)=>b.date.localeCompare(a.date))[0];
@@ -1907,7 +1907,7 @@ function VietlottFinanceTab({vietData,setVietData,people}){
   const saveFund=f=>{setVietData(d=>({...d,funds:d.funds.map(x=>x.id===f.id?f:x)}));setEditFund(null)};
   const delFund=id=>setVietData(d=>({...d,funds:d.funds.filter(f=>f.id!==id)}));
   const totalFund=vietData.funds.filter(f=>(!f.type||f.type==='fund')).reduce((s,f)=>s+f.amount,0);
-  const totalSpent=vietData.funds.filter(f=>f.type==='ticket').reduce((s,f)=>s+f.amount,0);
+  const totalSpent=vietData.results.length*10000+vietData.funds.filter(f=>f.type==='ticket').reduce((s,f)=>s+f.amount,0);
   const remaining=totalFund-totalSpent;
   const sorted=[...vietData.funds].sort((a,b)=>b.date.localeCompare(a.date));
   return(
