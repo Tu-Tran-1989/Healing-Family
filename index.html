@@ -1925,7 +1925,7 @@ function VietlottFinanceTab({vietData,setVietData,people}){
       {sorted.map(f=>{
         const ft=FUND_TYPES.find(t=>t.id===(f.type||'fund'));
         return(
-        <div key={f.id} className="list-row">
+        <div key={f.id} className="list-row" style={{background:`${ft.color}0d`,borderLeft:`3px solid ${ft.color}55`,borderRadius:10,marginBottom:6}}>
           <span style={{fontSize:18}}>{people.find(p=>p.name===f.person)?.avatar||'👤'}</span>
           <div style={{flex:1,minWidth:0}}>
             <div style={{display:'flex',alignItems:'center',gap:6}}>
