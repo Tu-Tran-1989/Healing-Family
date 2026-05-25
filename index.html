@@ -1925,18 +1925,20 @@ function VietlottFinanceTab({vietData,setVietData,people}){
       {sorted.map(f=>{
         const ft=FUND_TYPES.find(t=>t.id===(f.type||'fund'));
         return(
-        <div key={f.id} className="list-row" style={{background:`${ft.color}0d`,borderLeft:`3px solid ${ft.color}55`,borderRadius:10,marginBottom:6}}>
-          <span style={{fontSize:18}}>{people.find(p=>p.name===f.person)?.avatar||'👤'}</span>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{display:'flex',alignItems:'center',gap:6}}>
-              <span style={{fontSize:13,fontWeight:700,color:'var(--text)'}}>{f.person}</span>
-              <span style={{fontSize:9,fontWeight:700,padding:'1px 5px',borderRadius:4,background:`${ft.color}18`,color:ft.color,border:`1px solid ${ft.color}44`,whiteSpace:'nowrap'}}>{ft.icon} {ft.label}</span>
+        <div key={f.id} className="card" style={{padding:'10px 14px',marginBottom:8,border:`1px solid ${ft.color}33`,background:`${ft.color}08`}}>
+          <div style={{display:'flex',alignItems:'center',gap:10}}>
+            <span style={{fontSize:20}}>{people.find(p=>p.name===f.person)?.avatar||'👤'}</span>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:'flex',alignItems:'center',gap:6}}>
+                <span style={{fontSize:13,fontWeight:700,color:'var(--text)'}}>{f.person}</span>
+                <span style={{fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:4,background:`${ft.color}18`,color:ft.color,border:`1px solid ${ft.color}44`,whiteSpace:'nowrap'}}>{ft.icon} {ft.label}</span>
+              </div>
+              <div style={{fontSize:10,color:'var(--text-muted)',marginTop:2}}>{fmtDate(f.date)}{f.note?` · ${f.note}`:''}</div>
             </div>
-            <div style={{fontSize:10,color:'var(--text-muted)'}}>{fmtDate(f.date)}{f.note?` · ${f.note}`:''}</div>
+            <span style={{fontFamily:"'Space Mono',monospace",fontSize:14,fontWeight:700,color:ft.color}}>{fmtAmt(f.amount)}</span>
+            <button className="icon-btn" style={{width:28,height:28}} onClick={()=>setEditFund(f)}><Ic n="edit" size={13}/></button>
+            <button className="icon-btn danger" style={{width:28,height:28}} onClick={()=>delFund(f.id)}><Ic n="trash" size={13}/></button>
           </div>
-          <span style={{fontFamily:"'Space Mono',monospace",fontSize:13,fontWeight:700,color:ft.color}}>{fmtAmt(f.amount)}</span>
-          <button className="icon-btn" style={{width:28,height:28,marginLeft:4}} onClick={()=>setEditFund(f)}><Ic n="edit" size={13}/></button>
-          <button className="icon-btn danger" style={{width:28,height:28,marginLeft:4}} onClick={()=>delFund(f.id)}><Ic n="trash" size={13}/></button>
         </div>
         );
       })}
