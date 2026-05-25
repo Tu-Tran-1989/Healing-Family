@@ -1,0 +1,2084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<title>Healing Family</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+*{-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#06101e;--surface:#09172c;--card:#0d1e35;--card2:#081628;
+  --border:rgba(0,200,230,.10);--border2:rgba(0,200,230,.22);
+  --accent:#00c8e0;--accent2:#38e8ff;
+  --accent-lo:rgba(0,200,230,.07);--accent-md:rgba(0,200,230,.14);--accent-hi:rgba(0,200,230,.28);
+  --text:#c6e8f4;--text-dim:#4ea8c4;--text-muted:#27607a;
+  --danger:#f04444;--success:#10b981;--warn:#fbbf24;
+  --pad:max(16px,calc((100% - 640px)/2));
+}
+html,body,#root{width:100%;height:100%;margin:0;padding:0;background:var(--bg)}
+body{font-family:'Space Grotesk',sans-serif;color:var(--text);overflow:hidden;-webkit-text-size-adjust:100%}
+.app{display:flex;flex-direction:column;width:100vw;height:100dvh;overflow:hidden}
+
+/* grid bg */
+.bg-grid{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(0,200,230,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,230,.04) 1px,transparent 1px);
+  background-size:40px 40px}
+
+/* top bars */
+.top-bar{display:flex;align-items:center;justify-content:space-between;
+  padding:16px var(--pad) 0;z-index:2;flex-shrink:0}
+.top-bar-title{font-size:12px;font-weight:600;letter-spacing:3px;color:var(--text-muted);text-transform:uppercase;font-family:'Orbitron',sans-serif}
+.module-header{display:flex;align-items:center;gap:12px;
+  padding:14px var(--pad) 0;z-index:2;flex-shrink:0}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--text-muted);cursor:pointer;border:none;background:none;transition:color .2s;padding:6px 0;font-family:'Space Grotesk',sans-serif}
+.back-btn:hover{color:var(--accent)}
+.module-name{font-size:13px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;flex:1;text-align:center;margin-right:36px;font-family:'Orbitron',sans-serif;color:var(--text-dim)}
+.icon-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border2);background:var(--card);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  color:var(--text-dim);transition:all .2s;flex-shrink:0}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent)}
+.icon-btn.danger{color:var(--danger);border-color:rgba(240,68,68,.3)}
+.icon-btn.danger:hover{background:rgba(240,68,68,.08)}
+
+/* screen / scroll area */
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;padding:0 var(--pad) 24px;z-index:1;-webkit-overflow-scrolling:touch}
+.screen::-webkit-scrollbar{width:2px}
+.screen::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* bottom nav */
+.bottom-nav{display:flex;background:var(--card);border-top:1px solid var(--border);
+  padding:8px max(0px,calc((100% - 640px)/2)) calc(10px + env(safe-area-inset-bottom));
+  flex-shrink:0;z-index:2}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;
+  padding:8px 4px;cursor:pointer;border:none;background:none;min-height:52px;
+  color:var(--text-muted);font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;
+  transition:color .2s;font-family:'Space Grotesk',sans-serif;touch-action:manipulation}
+.nav-item.active{color:var(--mod-col,var(--accent))}
+.nav-icon{line-height:1;display:flex;align-items:center;justify-content:center}
+
+/* home */
+.home-hero{padding:32px 0 22px;text-align:center}
+.home-logo{width:60px;height:60px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--border2);border-radius:16px;color:var(--accent);
+  box-shadow:0 0 24px rgba(0,200,230,.18),inset 0 0 20px rgba(0,200,230,.04)}
+.home-title{font-size:24px;font-weight:700;letter-spacing:3px;color:var(--accent2);margin-bottom:4px;font-family:'Orbitron',sans-serif;text-transform:uppercase}
+.home-sub{font-size:11px;color:var(--text-muted);letter-spacing:3px;text-transform:uppercase}
+.module-card{display:flex;align-items:center;gap:16px;padding:14px 16px;border-radius:10px;
+  border:1px solid var(--border);background:var(--card);cursor:pointer;margin-bottom:8px;
+  transition:all .2s;position:relative;overflow:hidden;touch-action:manipulation}
+.module-card:hover{border-color:var(--mod-col,var(--accent));box-shadow:0 0 20px rgba(0,200,230,.07)}
+.module-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--mod-col,var(--accent));opacity:0;transition:opacity .2s}
+.module-card:hover::before,.module-card.has-dot::before{opacity:1}
+.mod-icon-wrap{width:44px;height:44px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;background:var(--card2);border:1px solid var(--border);
+  color:var(--mod-col,var(--accent))}
+.mod-info{flex:1;min-width:0}
+.mod-title{font-size:15px;font-weight:600;margin-bottom:3px;color:var(--text)}
+.mod-desc{font-size:13px;color:var(--text-muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mod-tag{font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
+  padding:2px 7px;border-radius:3px;white-space:nowrap;font-family:'Space Grotesk',sans-serif}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;
+  margin-bottom:10px}
+.card-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:2px}
+.card-sub{font-size:12px;color:var(--text-muted);letter-spacing:.4px}
+
+/* section label */
+.section-label{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  color:var(--text-muted);margin:18px 0 8px;display:flex;align-items:center;gap:8px;font-family:'Space Grotesk',sans-serif}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.accent-line{height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent);margin:4px 0 14px}
+
+/* stat boxes */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.stat-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:8px;
+  padding:13px 8px;text-align:center}
+.stat-val{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--accent)}
+.stat-lbl{font-size:11px;font-weight:600;letter-spacing:1.5px;color:var(--text-muted);text-transform:uppercase;margin-top:3px}
+
+/* leaderboard */
+.lb-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;
+  background:var(--card2);border:1px solid var(--border);margin-bottom:6px}
+.lb-rank{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--text-muted);width:24px;flex-shrink:0;text-align:center}
+.lb-score{font-family:'Space Mono',monospace;font-size:17px;font-weight:700;color:var(--accent2)}
+
+/* progress */
+.progress{height:2px;background:var(--border);border-radius:2px;margin-top:6px;overflow:hidden}
+.progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+
+/* badges */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:4px;font-size:12px;font-weight:600;letter-spacing:.5px;font-family:'Space Grotesk',sans-serif}
+.badge-blue{background:rgba(0,200,230,.08);color:var(--accent2);border:1px solid rgba(0,200,230,.2)}
+.badge-green{background:rgba(16,185,129,.08);color:#10b981;border:1px solid rgba(16,185,129,.2)}
+.badge-amber{background:rgba(251,191,36,.08);color:#fbbf24;border:1px solid rgba(251,191,36,.2)}
+.badge-red{background:rgba(240,68,68,.08);color:#f04444;border:1px solid rgba(240,68,68,.2)}
+.badge-indigo{background:rgba(129,140,248,.08);color:#a5b4fc;border:1px solid rgba(129,140,248,.2)}
+.badge-pos{padding:3px 8px;border-radius:3px;font-size:11px;font-weight:700;letter-spacing:.8px;font-family:'Space Grotesk',sans-serif}
+
+/* list rows */
+.list-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.list-row:last-child{border-bottom:none}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:12px 18px;border-radius:8px;font-family:'Space Grotesk',sans-serif;
+  font-size:13px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+  cursor:pointer;border:none;transition:all .18s;min-height:48px;touch-action:manipulation}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#06101e;box-shadow:0 0 20px rgba(0,200,230,.2)}
+.btn-primary:not(:disabled):active{filter:brightness(1.1)}
+.btn-ghost{background:var(--card2);border:1px solid var(--border2);color:var(--text-dim)}
+.btn-danger{background:rgba(240,68,68,.08);border:1px solid rgba(240,68,68,.28);color:#f04444}
+.btn-full{width:100%}
+.btn-sm{padding:7px 12px;min-height:36px;font-size:12px;border-radius:6px}
+
+/* forms */
+.form-group{margin-bottom:13px}
+.form-label{display:block;font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:5px;letter-spacing:1.2px;text-transform:uppercase}
+.form-input{width:100%;padding:11px 12px;min-height:44px;background:var(--card2);
+  border:1px solid var(--border2);border-radius:7px;color:var(--text);
+  font-size:15px;font-family:'Space Grotesk',sans-serif;outline:none;transition:border-color .18s}
+.form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-lo)}
+.form-input::placeholder{color:var(--text-muted)}
+input[type="date"].form-input{color-scheme:dark}
+select.form-input{cursor:pointer}
+
+/* people chips */
+.people-row{display:flex;gap:8px;flex-wrap:wrap}
+.person-chip{display:flex;align-items:center;gap:7px;padding:7px 11px;
+  border-radius:7px;background:var(--card2);border:1px solid var(--border);cursor:pointer}
+.person-chip.selected{border-color:var(--accent);background:var(--accent-lo)}
+.person-avatar{font-size:18px}
+.person-name{font-size:14px;font-weight:600}
+
+/* dot live */
+.dot-live{width:5px;height:5px;border-radius:50%;background:var(--success);display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* modals */
+.modal-overlay{position:fixed;inset:0;background:rgba(3,8,20,.75);backdrop-filter:blur(8px);
+  display:flex;align-items:flex-end;justify-content:center;z-index:1000}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:16px 16px 0 0;
+  width:100%;max-width:640px;max-height:92dvh;
+  display:flex;flex-direction:column;
+  animation:slideUp .22s ease}
+.modal-inner{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:22px 22px 0}
+.modal-footer{flex-shrink:0;display:flex;gap:10px;
+  padding:14px 22px calc(24px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--border)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:16px;letter-spacing:1px;font-family:'Orbitron',sans-serif;text-transform:uppercase}
+
+/* lottery balls */
+.balls{display:flex;gap:6px;flex-wrap:wrap}
+.ball{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'Space Mono',monospace;font-size:13px;font-weight:700;
+  border:1px solid var(--border2);background:var(--card2);color:var(--text-muted)}
+.ball.win{border-color:var(--accent);color:var(--accent2);background:var(--accent-lo)}
+.ball.hot{border-color:#fbbf24;color:#fbbf24;background:rgba(251,191,36,.06)}
+.ball.bonus{border-color:#f04444;color:#f04444;background:rgba(240,68,68,.06)}
+.ball.pick{border-color:var(--accent);color:var(--accent2);background:var(--accent-lo);cursor:pointer}
+
+/* number picker grid */
+.num-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:5px;margin-top:8px}
+.num-cell{aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'Space Mono',monospace;font-size:12px;font-weight:600;
+  border:1px solid var(--border);background:var(--card2);color:var(--text-muted);cursor:pointer;transition:all .15s}
+.num-cell.selected{border-color:var(--mod-col,var(--accent));color:var(--mod-col,var(--accent));background:rgba(0,200,230,.07)}
+
+/* expense type chips */
+.type-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+.type-chip{display:flex;align-items:center;gap:5px;padding:6px 10px;border-radius:6px;
+  border:1px solid var(--border);background:var(--card2);cursor:pointer;font-size:13px;font-weight:600;transition:all .15s}
+.type-chip.selected{border-color:var(--t-col);background:var(--t-bg);color:var(--t-col)}
+
+/* settings */
+.settings-row{display:flex;align-items:center;justify-content:space-between;
+  padding:11px 0;border-bottom:1px solid var(--border);gap:10px}
+.settings-row:last-child{border-bottom:none}
+.settings-key{font-size:15px;font-weight:600;color:var(--text-dim)}
+.settings-val{font-family:'Space Mono',monospace;font-size:14px;font-weight:600;
+  color:var(--accent2);background:var(--card2);border:1px solid var(--border2);
+  border-radius:6px;padding:5px 10px;width:68px;text-align:center;outline:none}
+.settings-val:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-lo)}
+
+/* hand result dropdowns */
+.hand-row{display:grid;grid-template-columns:1fr 120px 70px;gap:8px;align-items:center;margin-bottom:8px}
+.player-label{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600}
+
+/* tabs toggle (small) */
+.tab-row{display:flex;gap:6px;margin-bottom:12px}
+.tab-pill{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  cursor:pointer;border:1px solid var(--border2);background:var(--card2);color:var(--text-muted);transition:all .15s}
+.tab-pill.active{border-color:var(--mod-col,var(--accent));background:var(--accent-lo);color:var(--mod-col,var(--accent))}
+
+/* settlement */
+.settle-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
+.settle-row:last-child{border-bottom:none}
+
+/* fade */
+.fade{animation:fadeIn .22s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+/* empty state */
+.empty{text-align:center;padding:48px 16px;color:var(--text-muted)}
+.empty-icon{width:52px;height:52px;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--border);border-radius:12px;color:var(--text-muted)}
+.empty-text{font-size:15px;font-weight:600}
+.empty-sub{font-size:13px;margin-top:4px;opacity:.7}
+
+/* responsive */
+@media(max-width:480px){
+  .home-logo{width:50px;height:50px}
+  .home-title{font-size:20px}
+  .mod-icon-wrap{width:40px;height:40px}
+  .stat-val{font-size:19px}
+  .ball{width:28px;height:28px}
+  .num-grid{grid-template-columns:repeat(8,1fr)}
+  .hand-row{grid-template-columns:1fr 110px 60px}
+}
+@media(max-width:360px){
+  .num-grid{grid-template-columns:repeat(7,1fr)}
+  .hand-row{grid-template-columns:1fr 100px 56px}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const { useState, useEffect, useCallback, useMemo, useRef } = React;
+
+// ── Utilities ──────────────────────────────────────────────────────────────
+let _uid = Date.now();
+const uid = () => String(++_uid);
+const store = {
+  get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},
+  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+};
+const todayStr=()=>{const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+const fmtDate=s=>{if(!s)return'';const d=new Date(s+'T00:00:00');return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})};
+const fmtAmt=n=>'₫'+Math.round(n||0).toLocaleString();
+const fmtShort=n=>{const a=Math.abs(n),s=n<0?'-':'';return a>=1e6?s+(a/1e6).toFixed(1).replace(/\.0$/,'')+'M':a>=1e3?s+(a/1e3).toFixed(0)+'K':s+a};
+
+// ── SVG Icons ──────────────────────────────────────────────────────────────
+const IC={
+  home:['M3 12l9-9 9 9','M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9'],
+  card:'M2 7h20v13a2 2 0 01-2 2H4a2 2 0 01-2-2V7zm0 0V5a2 2 0 012-2h16a2 2 0 012 2v2M8 14h.01M12 14h.01',
+  expense:'M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6',
+  lottery:'M8.5 2H15.5L22 9l-10 13L2 9 8.5 2z',
+  settings:['M12 15a3 3 0 100-6 3 3 0 000 6z','M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z'],
+  play:'M5 3l14 9-14 9V3z',
+  history:'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+  stats:'M18 20V10M12 20V4M6 20v-6',
+  finance:'M3 6h18v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6zm0 0V4a2 2 0 012-2h2m12 0h2a2 2 0 012 2v2M9 14l2 2 4-4',
+  dashboard:'M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z',
+  back:'M15 18l-6-6 6-6',
+  close:'M18 6L6 18M6 6l12 12',
+  add:'M12 5v14M5 12h14',
+  edit:'M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z',
+  trash:'M3 6h18m-2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2',
+  trophy:['M5 3h14l-1 9a6 6 0 01-12 0L5 3z','M8 21h8','M12 17v4'],
+  fire:'M12 2c0 6-6 8-6 14a6 6 0 0012 0c0-6-6-8-6-14z',
+  star:'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z',
+  settle:'M5 12h14m-7-7l7 7-7 7',
+  users:['M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2','M9 7a4 4 0 100 8 4 4 0 000-8z','M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75'],
+  user:['M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2','M12 7a4 4 0 100 8 4 4 0 000-8z'],
+  cloud:['M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z'],
+  warn:'M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01',
+  check:'M20 6L9 17l-5-5',
+  upload:'M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12',
+  download:'M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3',
+  reopen:'M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15',
+};
+function Ic({n,size=18,style,...rest}){
+  const d=IC[n];
+  if(!d)return null;
+  const paths=Array.isArray(d)?d:[d];
+  return(
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
+      style={{flexShrink:0,...style}} {...rest}>
+      {paths.map((p,i)=><path key={i} d={p}/>)}
+    </svg>
+  );
+}
+
+// ── Constants ──────────────────────────────────────────────────────────────
+const AVATARS=['🦁','🦊','🐯','🐻','🐼','🐨','🦄','🐸','🐙','🦋','🐢','🦀','🦜','🐬','🐺','🦝','🦉','🦩','🐝','🦈'];
+const COLORS=['#6366f1','#059669','#d97706','#dc2626','#0284c7','#7c3aed','#db2777','#ea580c','#16a34a','#0891b2'];
+const EXPENSE_TYPES=[
+  {id:'food',label:'Food',icon:'🍜',color:'#d97706'},
+  {id:'snack',label:'Snack',icon:'🍿',color:'#ea580c'},
+  {id:'coffee',label:'Coffee',icon:'☕',color:'#92400e'},
+  {id:'transport',label:'Transport',icon:'🚗',color:'#0284c7'},
+  {id:'hotel',label:'Hotel',icon:'🏨',color:'#7c3aed'},
+  {id:'flight',label:'Flight',icon:'✈️',color:'#0891b2'},
+  {id:'activity',label:'Activity',icon:'🎡',color:'#059669'},
+  {id:'other',label:'Other',icon:'📦',color:'#64748b'},
+];
+const DEFAULT_SETTINGS={
+  card:{jackpot:5,first:3,second:2,third:1,fourth:0,penalty:-1},
+  vietlott:{startDate:todayStr(),nums645:[],nums655:[]}
+};
+const DEFAULT_PEOPLE=[
+  {id:'p1',name:'Alex',avatar:'🦁',color:'#6366f1'},
+  {id:'p2',name:'Mia',avatar:'🦊',color:'#059669'},
+  {id:'p3',name:'Sam',avatar:'🐯',color:'#d97706'},
+  {id:'p4',name:'Jordan',avatar:'🐻',color:'#dc2626'},
+];
+
+// ── Shared Modal ───────────────────────────────────────────────────────────
+function Modal({title,onClose,children,footer}){
+  useEffect(()=>{
+    const h=e=>{if(e.key==='Escape')onClose()};
+    document.addEventListener('keydown',h);
+    return()=>document.removeEventListener('keydown',h);
+  },[onClose]);
+  return ReactDOM.createPortal(
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal fade">
+        <div className="modal-inner">
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+            <div className="modal-title">{title}</div>
+            <button className="icon-btn" onClick={onClose}>✕</button>
+          </div>
+          {children}
+        </div>
+        {footer&&<div className="modal-footer">{footer}</div>}
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+// ── Person Modal (add/edit person) ─────────────────────────────────────────
+function PersonModal({person,onSave,onClose}){
+  const [name,setName]=useState(person?.name||'');
+  const [avatar,setAvatar]=useState(person?.avatar||AVATARS[0]);
+  const [color,setColor]=useState(person?.color||COLORS[0]);
+  const save=()=>{if(!name.trim())return;onSave({id:person?.id||uid(),name:name.trim(),avatar,color})};
+  return(
+    <Modal title={person?'Edit Person':'Add Person'} onClose={onClose}
+      footer={<><button className="btn btn-ghost btn-full" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary btn-full" onClick={save} disabled={!name.trim()}>Save</button></>}>
+      <div className="form-group">
+        <label className="form-label">Name</label>
+        <input className="form-input" value={name} onChange={e=>setName(e.target.value)} placeholder="Name" maxLength={20}/>
+      </div>
+      <div className="form-group">
+        <label className="form-label">Avatar</label>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(10,1fr)',gap:6}}>
+          {AVATARS.map(a=>(
+            <button key={a} onClick={()=>setAvatar(a)}
+              style={{fontSize:22,padding:'4px',borderRadius:8,border:`2px solid ${avatar===a?color:'var(--border)'}`,
+                background:avatar===a?'var(--accent-lo)':'var(--card2)',cursor:'pointer'}}>
+              {a}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="form-group">
+        <label className="form-label">Color</label>
+        <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+          {COLORS.map(c=>(
+            <button key={c} onClick={()=>setColor(c)}
+              style={{width:30,height:30,borderRadius:'50%',background:c,cursor:'pointer',
+                border:`3px solid ${color===c?'var(--text)':'transparent'}`,transition:'border-color .15s'}}>
+            </button>
+          ))}
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// CARD GAME MODULE
+// ══════════════════════════════════════════════════════════════════════════
+const POSITIONS=[
+  {key:'jackpot',emoji:'🏆',label:'Jackpot',unique:true},
+  {key:'first',emoji:'🥇',label:'1st',unique:true},
+  {key:'second',emoji:'🥈',label:'2nd',unique:true},
+  {key:'third',emoji:'🥉',label:'3rd',unique:true},
+  {key:'fourth',emoji:'4️⃣',label:'4th',unique:true},
+  {key:'burned',emoji:'🔥',label:'Burned',unique:false},
+];
+
+function calcScore(pts,hands,pid){
+  let t=0;
+  for(const h of hands){
+    const pl=h.placements||{};
+    const bonus=(h.bonuses||{})[pid]||0;
+    if(pl.jackpot===pid) t+=(pts.jackpot??5);
+    else if(pl.first===pid) t+=(pts.first??3);
+    else if(pl.second===pid) t+=(pts.second??2);
+    else if(pl.third===pid) t+=(pts.third??1);
+    else if(pl.fourth===pid) t+=(pts.fourth??0);
+    else if((h.burned||[]).includes(pid)) t+=(pts.penalty??-1);
+    t+=bonus;
+  }
+  return t;
+}
+
+// Line Chart
+function RoundLineChart({round,people,pts}){
+  const hands=round.hands;
+  if(!hands.length)return null;
+  const TEAM_COLORS={A:'#6366f1',B:'#059669'};
+  const isTeams=round.mode==='teams'&&round.teams?.length===2;
+  const series=isTeams
+    ? round.teams.map(team=>{
+        let cum=0;const points=[0];
+        for(const h of hands){
+          const teamScore=team.members.reduce((s,pid)=>s+calcScore(pts,[h],pid),0);
+          cum+=teamScore;points.push(cum);
+        }
+        return{pid:team.id,name:team.label,color:TEAM_COLORS[team.id]||'#94a3b8',points};
+      })
+    : round.participants.map(p=>p.id||p).map(pid=>{
+        const person=people.find(p=>p.id===pid);
+        let cum=0;const points=[0];
+        for(const h of hands){cum+=calcScore(pts,[h],pid);points.push(cum);}
+        return{pid,name:person?.name||'?',color:person?.color||'#94a3b8',points};
+      });
+  const allVals=series.flatMap(s=>s.points);
+  const minY=Math.min(0,...allVals),maxY=Math.max(0,...allVals);
+  const range=maxY-minY||1;
+  const W=320,H=140,pad={t:16,r:44,b:24,l:32};
+  const iW=W-pad.l-pad.r,iH=H-pad.t-pad.b;
+  const xScale=i=>pad.l+i*(iW/hands.length);
+  const yScale=v=>pad.t+iH-(v-minY)/range*iH;
+  return(
+    <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',height:'auto',display:'block',marginTop:8}}>
+      {/* zero line */}
+      {minY<0&&maxY>0&&<line x1={pad.l} y1={yScale(0)} x2={W-pad.r} y2={yScale(0)} stroke="var(--border2)" strokeWidth={1}/>}
+      {/* series */}
+      {series.map(s=>{
+        const pts2=s.points.map((v,i)=>`${xScale(i)},${yScale(v)}`).join(' ');
+        return(
+          <g key={s.pid}>
+            <polyline points={pts2} fill="none" stroke={s.color} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round"/>
+            {s.points.map((v,i)=>(
+              <circle key={i} cx={xScale(i)} cy={yScale(v)} r={3} fill={s.color}/>
+            ))}
+            <text x={xScale(hands.length)+3} y={yScale(s.points[s.points.length-1])+4}
+              fontSize={9} fill={s.color} fontFamily="'Exo 2',sans-serif" fontWeight={700}>{s.name}</text>
+          </g>
+        );
+      })}
+      {/* x labels */}
+      {hands.map((_,i)=>(
+        <text key={i} x={xScale(i+1)} y={H-6} textAnchor="middle" fontSize={8} fill="var(--text-muted)" fontFamily="'Space Mono',monospace">{i+1}</text>
+      ))}
+      {/* y labels */}
+      {[minY,0,maxY].filter((v,i,a)=>a.indexOf(v)===i).map(v=>(
+        <text key={v} x={pad.l-3} y={yScale(v)+4} textAnchor="end" fontSize={8} fill="var(--text-muted)" fontFamily="'Space Mono',monospace">{v}</text>
+      ))}
+    </svg>
+  );
+}
+
+// New Round Modal
+const TEAM_PALETTE=['#6366f1','#059669','#d97706','#dc2626','#0891b2','#7c3aed'];
+function NewRoundModal({people,onSave,onClose}){
+  const [name,setName]=useState('');
+  const [note,setNote]=useState('');
+  const [date,setDate]=useState(todayStr);
+  const [mode,setMode]=useState('singles');
+  const [selected,setSelected]=useState([]); // singles mode
+  const [teams,setTeams]=useState([
+    {id:'A',label:'Team A',members:[]},
+    {id:'B',label:'Team B',members:[]},
+  ]);
+
+  const toggleSingles=id=>setSelected(s=>s.includes(id)?s.filter(x=>x!==id):[...s,id]);
+
+  // exclusive: checking in one team removes from others
+  const toggleTeamMember=(teamId,pid)=>{
+    setTeams(ts=>ts.map(t=>{
+      if(t.id===teamId) return{...t,members:t.members.includes(pid)?t.members.filter(x=>x!==pid):[...t.members,pid]};
+      return{...t,members:t.members.filter(x=>x!==pid)};
+    }));
+  };
+
+  const addTeam=()=>{
+    const letters='ABCDEFGHIJ';
+    const id=letters[teams.length]||String(teams.length+1);
+    setTeams(ts=>[...ts,{id,label:`Team ${id}`,members:[]}]);
+  };
+  const removeTeam=id=>teams.length>2&&setTeams(ts=>ts.filter(t=>t.id!==id));
+
+  const allAssigned=teams.flatMap(t=>t.members);
+  const teamsValid=mode==='singles'
+    ? selected.length>=2
+    : teams.length>=2&&teams.every(t=>t.members.length>=1)&&allAssigned.length>=2;
+  const canSave=name.trim()&&teamsValid;
+
+  const save=()=>{
+    if(!canSave)return;
+    if(mode==='singles'){
+      onSave({id:uid(),name:name.trim(),note:note.trim(),mode:'singles',teams:null,
+        createdAt:date?new Date(date).getTime():Date.now(),
+        participants:selected.map(id=>({id})),hands:[]});
+    } else {
+      const participants=[...new Set(allAssigned)].map(id=>({id}));
+      onSave({id:uid(),name:name.trim(),note:note.trim(),mode:'teams',teams,
+        createdAt:date?new Date(date).getTime():Date.now(),
+        participants,hands:[]});
+    }
+  };
+
+  const segBtn=(m,icon,label)=>(
+    <button onClick={()=>setMode(m)} style={{
+      flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:6,
+      padding:'9px 0',border:'1.5px solid',borderRadius:8,
+      fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:"'Space Grotesk',sans-serif",
+      borderColor:mode===m?'var(--accent)':'var(--border2)',
+      background:mode===m?'var(--accent-lo)':'var(--card2)',
+      color:mode===m?'var(--accent)':'var(--text-muted)'}}>
+      <span style={{fontSize:14}}>{icon}</span>{label}
+    </button>
+  );
+
+  const footer=(
+    <><button className="btn btn-ghost btn-full" onClick={onClose}>Cancel</button>
+      <button className="btn btn-primary btn-full" onClick={save} disabled={!canSave}>＋ Start Round</button></>
+  );
+
+  return(
+    <Modal title="New Round" onClose={onClose} footer={footer}>
+      <div className="form-group">
+        <label className="form-label">Round Name</label>
+        <input className="form-input" value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Friday night at John's place"/>
+      </div>
+      <div className="form-group">
+        <label className="form-label">Date</label>
+        <input type="date" className="form-input" value={date} onChange={e=>setDate(e.target.value)}/>
+      </div>
+      <div className="form-group">
+        <label className="form-label">Type</label>
+        <div style={{display:'flex',gap:8}}>{segBtn('singles','👤','Individual')}{segBtn('teams','👥','Team')}</div>
+      </div>
+      {mode==='singles'&&(
+        <div className="form-group">
+          <label className="form-label">Players (pick ≥ 2)</label>
+          <div className="people-row">
+            {people.map(p=>(
+              <div key={p.id} className={`person-chip${selected.includes(p.id)?' selected':''}`} onClick={()=>toggleSingles(p.id)}>
+                <span className="person-avatar">{p.avatar}</span>
+                <span className="person-name" style={{color:selected.includes(p.id)?'var(--accent)':p.color}}>{p.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {mode==='teams'&&(
+        <div className="form-group">
+          <label className="form-label">Teams</label>
+          {teams.map((team,ti)=>{
+            const col=TEAM_PALETTE[ti]||'#94a3b8';
+            return(
+              <div key={team.id} style={{border:`1.5px solid ${col}40`,borderRadius:12,marginBottom:10,overflow:'hidden'}}>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',
+                  padding:'8px 12px',background:`${col}12`,borderBottom:`1px solid ${col}30`}}>
+                  <span style={{fontSize:12,fontWeight:800,color:col,letterSpacing:.8}}>{team.label}</span>
+                  {teams.length>2&&<button onClick={()=>removeTeam(team.id)}
+                    style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-muted)',fontSize:14,lineHeight:1,padding:2}}>✕</button>}
+                </div>
+                {people.map(p=>{
+                  const checked=team.members.includes(p.id);
+                  const inOther=!checked&&teams.some(t=>t.id!==team.id&&t.members.includes(p.id));
+                  return(
+                    <div key={p.id} onClick={()=>!inOther&&toggleTeamMember(team.id,p.id)}
+                      style={{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',
+                        borderBottom:`1px solid var(--border)`,cursor:inOther?'not-allowed':'pointer',
+                        background:checked?`${col}0e`:'transparent',opacity:inOther?.4:1,
+                        transition:'background .15s'}}>
+                      <div style={{width:18,height:18,borderRadius:4,flexShrink:0,
+                        border:`2px solid ${checked?col:'var(--border2)'}`,
+                        background:checked?col:'transparent',
+                        display:'flex',alignItems:'center',justifyContent:'center'}}>
+                        {checked&&<span style={{color:'#fff',fontSize:11,lineHeight:1,fontWeight:900}}>✓</span>}
+                      </div>
+                      <span style={{fontSize:18}}>{p.avatar}</span>
+                      <span style={{fontSize:13,fontWeight:700,color:checked?col:p.color}}>{p.name}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+          <button onClick={addTeam}
+            style={{background:'none',border:`1.5px dashed var(--border2)`,borderRadius:8,
+              padding:'7px 14px',fontSize:11,fontWeight:700,color:'var(--text-muted)',cursor:'pointer',
+              fontFamily:"'Space Grotesk',sans-serif",letterSpacing:.8,width:'100%'}}>
+            ＋ Add Team
+          </button>
+        </div>
+      )}
+      <div className="form-group">
+        <label className="form-label">Note (optional)</label>
+        <input className="form-input" value={note} onChange={e=>setNote(e.target.value)} placeholder="Any notes…"/>
+      </div>
+    </Modal>
+  );
+}
+
+// Add Hand Modal
+function AddHandModal({round,people,pts,onSave,onClose}){
+  const pids=round.participants.map(p=>p.id||p);
+  const [assignments,setAssignments]=useState({});
+  const [bonuses,setBonuses]=useState({});
+  const setBonus=(pid,val)=>setBonuses(p=>({...p,[pid]:Number(val)||0}));
+  const setAssignment=(pid,pos)=>{
+    if(pos==='jackpot'){
+      const auto={};
+      pids.forEach(p=>auto[p]=p===pid?'jackpot':'fourth');
+      setAssignments(auto);
+    } else {
+      setAssignments(p=>({...p,[pid]:pos}));
+    }
+  };
+  const takenUnique={};
+  for(const[p,pos] of Object.entries(assignments)){if(pos&&pos!=='burned')takenUnique[pos]=p;}
+  const canSave=pids.length>0&&pids.every(p=>assignments[p]);
+  const save=()=>{
+    const placements={};const burned=[];
+    for(const[pid,pos] of Object.entries(assignments)){
+      if(pos==='burned')burned.push(pid);
+      else if(pos)placements[pos]=pid;
+    }
+    onSave({id:uid(),placements,burned,bonuses,ts:Date.now()});
+  };
+  const posColor={jackpot:'#d97706',first:'#f59e0b',second:'#64748b',third:'#b45309',fourth:'#6366f1',burned:'#dc2626'};
+  return(
+    <Modal title={`Hand #${round.hands.length+1}`} onClose={onClose}
+      footer={<><button className="btn btn-ghost btn-full" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary btn-full" onClick={save} disabled={!canSave}>Save Hand</button></>}>
+      <div style={{marginBottom:8,display:'grid',gridTemplateColumns:'1fr 120px 68px',gap:8}}>
+        <span className="form-label" style={{margin:0}}>Player</span>
+        <span className="form-label" style={{margin:0}}>Position</span>
+        <span className="form-label" style={{margin:0}}>Bonus</span>
+      </div>
+      {pids.map(pid=>{
+        const person=people.find(p=>p.id===pid);
+        const cur=assignments[pid]||'';
+        return(
+          <div key={pid} className="hand-row">
+            <div className="player-label">
+              <span style={{fontSize:18}}>{person?.avatar}</span>
+              <span style={{color:person?.color,fontWeight:700,fontSize:13}}>{person?.name}</span>
+            </div>
+            <select className="form-input" value={cur} onChange={e=>setAssignment(pid,e.target.value)}
+              style={{padding:'8px 6px',fontSize:12,color:cur?posColor[cur]:'var(--text-muted)'}}>
+              <option value="">— pick —</option>
+              {POSITIONS.map(pos=>{
+                const taken=pos.unique&&takenUnique[pos.key]&&takenUnique[pos.key]!==pid;
+                return<option key={pos.key} value={pos.key} disabled={taken}>{pos.emoji} {pos.label}</option>;
+              })}
+            </select>
+            <input type="number" className="form-input" value={bonuses[pid]||''}
+              onChange={e=>setBonus(pid,e.target.value)} placeholder="0"
+              style={{padding:'8px 6px',fontSize:12,textAlign:'center'}}/>
+          </div>
+        );
+      })}
+    </Modal>
+  );
+}
+
+// Scores list for a round
+function RoundScores({round,people,pts}){
+  const pids=round.participants.map(p=>p.id||p);
+  const scored=pids.map(pid=>{
+    const person=people.find(p=>p.id===pid);
+    const score=calcScore(pts,round.hands,pid);
+    const wins=round.hands.filter(h=>h.placements?.first===pid).length;
+    const burned=round.hands.filter(h=>(h.burned||[]).includes(pid)).length;
+    return{pid,person,score,wins,burned};
+  }).sort((a,b)=>b.score-a.score);
+  const total=round.hands.length||1;
+  const maxScore=Math.max(...scored.map(s=>Math.abs(s.score)),1);
+  return scored.map((s,i)=>(
+    <div key={s.pid} style={{marginBottom:12}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+        <span style={{fontSize:10,fontFamily:"'Space Mono',monospace",fontWeight:700,color:'var(--text-muted)',width:22,textAlign:'center'}}>{`0${i+1}`.slice(-2)}</span>
+        <span style={{fontSize:18}}>{s.person?.avatar}</span>
+        <span style={{flex:1,fontSize:13,fontWeight:700,color:s.person?.color}}>{s.person?.name}</span>
+        <span style={{fontSize:10,color:'var(--text-muted)',fontFamily:"'Space Mono',monospace"}}>W:{Math.round(s.wins/total*100)}% B:{Math.round(s.burned/total*100)}%</span>
+        <span style={{fontFamily:"'Space Mono',monospace",fontSize:15,fontWeight:700,
+          color:s.score<0?'var(--danger)':'var(--accent2)'}}>{s.score>0?'+':''}{s.score}</span>
+      </div>
+      <div className="progress">
+        <div className="progress-fill" style={{width:`${Math.abs(s.score)/maxScore*100}%`,
+          background:`linear-gradient(90deg,${s.person?.color}60,${s.person?.color})`}}/>
+      </div>
+    </div>
+  ));
+}
+
+// Hand badge row
+function HandBadges({hand,people}){
+  const pl=hand.placements||{};
+  const getN=id=>people.find(p=>p.id===id)?.name||'?';
+  const badges=[];
+  if(pl.jackpot)badges.push(<span key="jp" className="badge-pos" style={{background:'rgba(251,191,36,.12)',color:'#fbbf24',border:'1px solid rgba(251,191,36,.28)'}}>JP {getN(pl.jackpot)}</span>);
+  if(pl.first)badges.push(<span key="1" className="badge-pos" style={{background:'rgba(0,200,230,.10)',color:'var(--accent2)',border:'1px solid rgba(0,200,230,.24)'}}>1ST {getN(pl.first)}</span>);
+  if(pl.second)badges.push(<span key="2" className="badge-pos" style={{background:'rgba(148,163,184,.08)',color:'#94a3b8',border:'1px solid rgba(148,163,184,.2)'}}>2ND {getN(pl.second)}</span>);
+  if(pl.third)badges.push(<span key="3" className="badge-pos" style={{background:'rgba(251,146,60,.08)',color:'#fb923c',border:'1px solid rgba(251,146,60,.2)'}}>3RD {getN(pl.third)}</span>);
+  if(pl.fourth)badges.push(<span key="4" className="badge-pos" style={{background:'rgba(129,140,248,.08)',color:'#a5b4fc',border:'1px solid rgba(129,140,248,.2)'}}>4TH {getN(pl.fourth)}</span>);
+  (hand.burned||[]).forEach(id=>badges.push(<span key={`b${id}`} className="badge-pos" style={{background:'rgba(240,68,68,.10)',color:'#f04444',border:'1px solid rgba(240,68,68,.24)'}}>BRN {getN(id)}</span>));
+  return<div style={{display:'flex',gap:5,flexWrap:'wrap',marginTop:6}}>{badges}</div>;
+}
+
+// Card: Play Tab
+function CardPlayTab({round,rounds,people,pts,setRounds,setActiveRoundId}){
+  const [showAdd,setShowAdd]=useState(false);
+  const [showDelete,setShowDelete]=useState(false);
+  const [showNew,setShowNew]=useState(false);
+  const createRound=r=>{setRounds(rs=>[...rs,r]);setActiveRoundId(r.id);setShowNew(false)};
+  if(!round){
+    return(
+      <div>
+        <div className="empty" style={{paddingBottom:24}}>
+          <div className="empty-icon"><Ic n="card" size={28}/></div>
+          <div className="empty-text">No active round</div>
+          <div className="empty-sub" style={{marginBottom:20}}>Start a new round to begin tracking</div>
+          <button className="btn btn-primary" onClick={()=>setShowNew(true)}>＋ New Round</button>
+        </div>
+        {showNew&&<NewRoundModal people={people} onSave={createRound} onClose={()=>setShowNew(false)}/>}
+      </div>
+    );
+  }
+  const addHand=hand=>{
+    setRounds(rs=>rs.map(r=>r.id===round.id?{...r,hands:[...r.hands,hand]}:r));
+    setShowAdd(false);
+  };
+  const finishRound=()=>{
+    setRounds(rs=>rs.map(r=>r.id===round.id?{...r,finished:true}:r));
+    setActiveRoundId(null);
+    setShowDelete(false);
+  };
+  return(
+    <div>
+      <div className="section-label" style={{marginTop:16}}>Active Round</div>
+      <div className="card">
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+          <div>
+            <div className="card-title">{round.name}</div>
+            <div className="card-sub">{round.hands.length} hands · {fmtDate(new Date(round.createdAt).toISOString().split('T')[0])}{round.note?` · ${round.note}`:''}</div>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:5,fontSize:10,color:'#059669',fontWeight:700,letterSpacing:1}}>
+            <span className="dot-live"/> LIVE
+          </div>
+        </div>
+        <div className="accent-line"/>
+        <RoundScores round={round} people={people} pts={pts}/>
+        {round.hands.length>=1&&<RoundLineChart round={round} people={people} pts={pts}/>}
+      </div>
+      <button className="btn btn-primary btn-full" style={{marginBottom:10}} onClick={()=>setShowAdd(true)}>
+        ＋ Add Hand #{round.hands.length+1}
+      </button>
+      <button className="btn btn-ghost btn-full btn-sm" onClick={()=>setShowDelete(true)}>Finish Round</button>
+      {showAdd&&<AddHandModal round={round} people={people} pts={pts} onSave={addHand} onClose={()=>setShowAdd(false)}/>}
+      {showDelete&&(
+        <Modal title="Finish Round?" onClose={()=>setShowDelete(false)}
+          footer={<><button className="btn btn-ghost btn-full" onClick={()=>setShowDelete(false)}>Cancel</button>
+            <button className="btn btn-danger btn-full" onClick={finishRound}>Finish</button></>}>
+          <p style={{fontSize:13,color:'var(--text-muted)'}}>This round will be moved to history. You can still view it but not add more hands.</p>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+// Card: History Tab
+function CardHistoryTab({rounds,activeRoundId,people,pts,setRounds,setActiveRoundId}){
+  const [detail,setDetail]=useState(null);
+  const sorted=[...rounds].sort((a,b)=>b.createdAt-a.createdAt);
+  const deleteRound=id=>{
+    setRounds(rs=>rs.filter(r=>r.id!==id));
+    if(activeRoundId===id)setActiveRoundId(null);
+    setDetail(null);
+  };
+  const setActive=id=>{
+    setRounds(rs=>rs.map(r=>r.id===id?{...r,finished:false}:r));
+    setActiveRoundId(id);
+    setDetail(null);
+  };
+  if(detail){
+    const r=rounds.find(r=>r.id===detail);
+    if(!r){setDetail(null);return null;}
+    const isActive=r.id===activeRoundId&&!r.finished;
+    return(
+      <div>
+        <button className="btn btn-ghost btn-sm" style={{marginTop:16,marginBottom:8}} onClick={()=>setDetail(null)}>‹ Back</button>
+        <div className="card">
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
+            <div className="card-title">{r.name}</div>
+            {isActive?<span className="badge badge-green"><span className="dot-live"/> Live</span>:<span className="badge badge-blue">Done</span>}
+          </div>
+          <div className="card-sub" style={{marginBottom:12}}>{r.hands.length} hands · {fmtDate(new Date(r.createdAt).toISOString().split('T')[0])}{r.note?` · ${r.note}`:''}{r.mode==='teams'?' · Teams':''}</div>
+          <RoundScores round={r} people={people} pts={pts}/>
+          {r.hands.length>=1&&<RoundLineChart round={r} people={people} pts={pts}/>}
+        </div>
+        <div className="section-label">Hands</div>
+        {r.hands.map((h,i)=>(
+          <div key={h.id} className="card" style={{padding:'10px 14px'}}>
+            <div style={{fontSize:11,fontWeight:700,color:'var(--text-muted)'}}>Hand #{i+1}</div>
+            <HandBadges hand={h} people={people}/>
+          </div>
+        ))}
+        <div style={{display:'flex',gap:8,marginTop:8}}>
+          {!isActive&&<button className="btn btn-primary btn-full btn-sm" onClick={()=>setActive(r.id)}>▶ Set as Active</button>}
+          <button className="btn btn-danger btn-full btn-sm" onClick={()=>deleteRound(r.id)}>Delete</button>
+        </div>
+      </div>
+    );
+  }
+  return(
+    <div>
+      <div className="section-label" style={{marginTop:16}}>Rounds</div>
+      {!sorted.length&&<div className="empty"><div className="empty-icon"><Ic n="history" size={28}/></div><div className="empty-text">No rounds yet</div></div>}
+      {sorted.map(r=>(
+        <div key={r.id} className="card" style={{cursor:'pointer'}} onClick={()=>setDetail(r.id)}>
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            <span style={{color:'#6366f1',opacity:.7}}><Ic n="card" size={22}/></span>
+            <div style={{flex:1}}>
+              <div className="card-title">{r.name}</div>
+              <div className="card-sub">{fmtDate(new Date(r.createdAt).toISOString().split('T')[0])} · {r.hands.length} hands</div>
+            </div>
+            {r.id===activeRoundId
+              ?<span className="badge badge-green"><span className="dot-live"/> Live</span>
+              :<span className="badge badge-blue">Done</span>}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Card: Stats Tab
+function CardStatsTab({rounds,people,pts}){
+  const finished=rounds.filter(r=>!r.id||true); // all rounds count
+  const allHands=finished.flatMap(r=>r.hands);
+  const pStats=people.map(p=>{
+    const score=calcScore(pts,allHands,p.id);
+    const wins=allHands.filter(h=>h.placements?.first===p.id).length;
+    const jackpots=allHands.filter(h=>h.placements?.jackpot===p.id).length;
+    const burned=allHands.filter(h=>(h.burned||[]).includes(p.id)).length;
+    return{...p,score,wins,jackpots,burned};
+  }).sort((a,b)=>b.score-a.score);
+  return(
+    <div>
+      <div className="stat-grid" style={{marginTop:16}}>
+        {[{v:rounds.length,l:'Rounds'},{v:allHands.length,l:'Hands'},{v:people.length,l:'Players'}].map(s=>(
+          <div key={s.l} className="stat-box"><div className="stat-val">{s.v}</div><div className="stat-lbl">{s.l}</div></div>
+        ))}
+      </div>
+      <div className="section-label">Leaderboard</div>
+      {!pStats.length&&<div className="empty"><div className="empty-icon"><Ic n="stats" size={28}/></div><div className="empty-text">No data yet</div></div>}
+      {pStats.map((p,i)=>(
+        <div key={p.id} className="lb-row">
+          <div className="lb-rank">{`0${i+1}`.slice(-2)}</div>
+          <span style={{fontSize:18}}>{p.avatar}</span>
+          <div style={{flex:1}}>
+            <div style={{fontSize:13,fontWeight:700,color:p.color}}>{p.name}</div>
+            <div style={{fontSize:10,color:'var(--text-muted)',fontFamily:"'Space Mono',monospace"}}>JP:{p.jackpots} · W:{p.wins} · B:{p.burned}</div>
+          </div>
+          <div className="lb-score" style={{color:p.score<0?'var(--danger)':'var(--accent2)'}}>{p.score>0?'+':''}{p.score}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Card Module
+function CardModule({onBack,people,rounds,setRounds,activeRoundId,setActiveRoundId,pts}){
+  const [tab,setTab]=useState('play');
+  const COL='#6366f1';
+  const activeRound=rounds.find(r=>r.id===activeRoundId&&!r.finished)||null;
+  const tabs=[{id:'play',icon:'play',label:'Play'},{id:'history',icon:'history',label:'History'},{id:'stats',icon:'stats',label:'Stats'}];
+  return(
+    <>
+      <div className="module-header">
+        <button className="back-btn" onClick={onBack}><Ic n="back" size={14}/> Home</button>
+        <div className="module-name" style={{color:COL}}>Card Game</div>
+      </div>
+      <div className="screen fade" style={{'--mod-col':COL}}>
+        <div style={{display:tab==='play'?'block':'none'}}>
+          <CardPlayTab round={activeRound} rounds={rounds} people={people} pts={pts} setRounds={setRounds} setActiveRoundId={setActiveRoundId}/>
+        </div>
+        <div style={{display:tab==='history'?'block':'none'}}>
+          <CardHistoryTab rounds={rounds} activeRoundId={activeRoundId} people={people} pts={pts} setRounds={setRounds} setActiveRoundId={setActiveRoundId}/>
+        </div>
+        <div style={{display:tab==='stats'?'block':'none'}}>
+          <CardStatsTab rounds={rounds} people={people} pts={pts}/>
+        </div>
+      </div>
+      <div className="bottom-nav" style={{'--mod-col':COL}}>
+        {tabs.map(t=>(
+          <button key={t.id} className={`nav-item${tab===t.id?' active':''}`} onClick={()=>setTab(t.id)}>
+            <span className="nav-icon"><Ic n={t.icon} size={20}/></span>{t.label}
+          </button>
+        ))}
+      </div>
+    </>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// EXPENSE MODULE
+// ══════════════════════════════════════════════════════════════════════════
+function calcSettlement(event,people){
+  const members=event.memberIds.map(id=>people.find(p=>p.id===id)).filter(Boolean);
+  if(!members.length)return{share:0,balances:[],transactions:[],total:0};
+  const total=event.expenses.reduce((s,e)=>s+e.amount,0);
+  const share=total/members.length;
+  const paidMap={};members.forEach(p=>{paidMap[p.id]=0});
+  event.expenses.forEach(e=>{if(paidMap[e.picId]!==undefined)paidMap[e.picId]+=e.amount});
+  const balances=members.map(p=>({...p,paid:paidMap[p.id]||0,owes:share,balance:(paidMap[p.id]||0)-share}));
+  // minimal transactions
+  const transactions=[];
+  const cred=[...balances.filter(b=>b.balance>0.01)].sort((a,b)=>b.balance-a.balance);
+  const debt=[...balances.filter(b=>b.balance<-0.01)].sort((a,b)=>a.balance-b.balance);
+  let ci=0,di=0;
+  while(ci<cred.length&&di<debt.length){
+    const amt=Math.min(cred[ci].balance,-debt[di].balance);
+    transactions.push({from:debt[di],to:cred[ci],amount:amt});
+    cred[ci].balance-=amt;debt[di].balance+=amt;
+    if(Math.abs(cred[ci].balance)<0.01)ci++;
+    if(Math.abs(debt[di].balance)<0.01)di++;
+  }
+  return{share,balances,transactions,total};
+}
+
+function NewEventModal({people,onSave,onClose}){
+  const [name,setName]=useState('');
+  const [place,setPlace]=useState('');
+  const [startDate,setStart]=useState(todayStr);
+  const [endDate,setEnd]=useState(todayStr);
+  const [memberIds,setMembers]=useState(people.map(p=>p.id));
+  const toggle=id=>setMembers(m=>m.includes(id)?m.filter(x=>x!==id):[...m,id]);
+  const save=()=>{
+    if(!name.trim()||!memberIds.length)return;
+    onSave({id:uid(),name:name.trim(),place:place.trim(),startDate,endDate,memberIds,expenses:[],places:[],finished:false,createdAt:Date.now()});
+  };
+  return(
+    <Modal title="New Event" onClose={onClose}
+      footer={<><button className="btn btn-ghost btn-full" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary btn-full" onClick={save} disabled={!name.trim()||!memberIds.length} style={{background:'linear-gradient(135deg,#047857,#059669)'}}>Create</button></>}>
+      <div className="form-group"><label className="form-label">Event Name</label>
+        <input className="form-input" value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Da Nang Trip"/>
+      </div>
+      <div className="form-group"><label className="form-label">Place (optional)</label>
+        <input className="form-input" value={place} onChange={e=>setPlace(e.target.value)} placeholder="City or location"/>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+        <div className="form-group"><label className="form-label">Start</label>
+          <input type="date" className="form-input" value={startDate} onChange={e=>setStart(e.target.value)}/></div>
+        <div className="form-group"><label className="form-label">End</label>
+          <input type="date" className="form-input" value={endDate} onChange={e=>setEnd(e.target.value)}/></div>
+      </div>
+      <div className="form-group"><label className="form-label">Members</label>
+        <div className="people-row">{people.map(p=>(
+          <div key={p.id} className={`person-chip${memberIds.includes(p.id)?' selected':''}`} onClick={()=>toggle(p.id)}>
+            <span className="person-avatar">{p.avatar}</span>
+            <span className="person-name" style={{color:memberIds.includes(p.id)?'var(--accent)':p.color}}>{p.name}</span>
+          </div>
+        ))}</div>
+      </div>
+    </Modal>
+  );
+}
+
+function AddExpenseModal({event,people,onSave,onClose,expense}){
+  const members=event.memberIds.map(id=>people.find(p=>p.id===id)).filter(Boolean);
+  const [amount,setAmount]=useState(expense?.amount||'');
+  const [type,setType]=useState(expense?.type||'food');
+  const [picId,setPicId]=useState(expense?.picId||members[0]?.id||'');
+  const [date,setDate]=useState(expense?.date||todayStr);
+  const [note,setNote]=useState(expense?.note||'');
+  const save=()=>{
+    if(!amount||!picId)return;
+    onSave({id:expense?.id||uid(),amount:Number(amount),type,picId,date,note:note.trim()});
+  };
+  const t=EXPENSE_TYPES.find(x=>x.id===type)||EXPENSE_TYPES[0];
+  return(
+    <Modal title={expense?'Edit Expense':'Add Expense'} onClose={onClose}
+      footer={<><button className="btn btn-ghost btn-full" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary btn-full" onClick={save} disabled={!amount||!picId}
+          style={{background:'linear-gradient(135deg,#047857,#059669)'}}>Save</button></>}>
+      <div className="form-group"><label className="form-label">Amount (₫)</label>
+        <input type="number" className="form-input" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0"/>
+      </div>
+      <div className="form-group"><label className="form-label">Category</label>
+        <div className="type-row">{EXPENSE_TYPES.map(et=>(
+          <div key={et.id} className={`type-chip${type===et.id?' selected':''}`}
+            style={type===et.id?{'--t-col':et.color,'--t-bg':et.color+'18'}:{}}
+            onClick={()=>setType(et.id)}>{et.icon} {et.label}</div>
+        ))}</div>
+      </div>
+      <div className="form-group"><label className="form-label">Paid by</label>
+        <div className="people-row">{members.map(p=>(
+          <div key={p.id} className={`person-chip${picId===p.id?' selected':''}`} onClick={()=>setPicId(p.id)}>
+            <span className="person-avatar">{p.avatar}</span>
+            <span className="person-name" style={{color:picId===p.id?'var(--accent)':p.color}}>{p.name}</span>
+          </div>
+        ))}</div>
+      </div>
+      <div className="form-group"><label className="form-label">Date</label>
+        <input type="date" className="form-input" value={date} onChange={e=>setDate(e.target.value)}/>
+      </div>
+      <div className="form-group"><label className="form-label">Note (optional)</label>
+        <input className="form-input" value={note} onChange={e=>setNote(e.target.value)} placeholder="What was this for?"/>
+      </div>
+    </Modal>
+  );
+}
+
+const PLACE_TYPES=[
+  {id:'meal',     label:'Meal',          icon:'🍽️', color:'#d97706'},
+  {id:'coffee',   label:'Coffee/Drink',  icon:'☕',  color:'#92400e'},
+  {id:'entertainment',label:'Entertainment',icon:'🎡',color:'#7c3aed'},
+  {id:'other',    label:'Other',         icon:'📍',  color:'#64748b'},
+];
+
+function AddPlaceModal({onSave,onClose,place}){
+  const [name,setName]=useState(place?.name||'');
+  const [address,setAddress]=useState(place?.address||'');
+  const [type,setType]=useState(place?.type||'meal');
+  const [note,setNote]=useState(place?.note||'');
+  const canSave=name.trim().length>0;
+  const save=()=>{
+    if(!canSave)return;
+    onSave({id:place?.id||uid(),name:name.trim(),address:address.trim(),type,note:note.trim()});
+  };
+  const pt=PLACE_TYPES.find(t=>t.id===type)||PLACE_TYPES[0];
+  return(
+    <Modal title={place?'Edit Place':'Add Place'} onClose={onClose}
+      footer={<><button className="btn btn-ghost btn-full" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary btn-full" onClick={save} disabled={!canSave} style={{background:'linear-gradient(135deg,#047857,#059669)'}}>
+          {place?'Save':'Add Place'}
+        </button></>}>
+      <div className="form-group"><label className="form-label">Place Name</label>
+        <input className="form-input" value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Phở Bắc"/>
+      </div>
+      <div className="form-group"><label className="form-label">Address (optional)</label>
+        <input className="form-input" value={address} onChange={e=>setAddress(e.target.value)} placeholder="Street or area"/>
+      </div>
+      <div className="form-group"><label className="form-label">Type</label>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+          {PLACE_TYPES.map(t=>(
+            <button key={t.id} onClick={()=>setType(t.id)}
+              style={{display:'flex',alignItems:'center',gap:8,padding:'9px 12px',borderRadius:8,
+                border:`1px solid ${type===t.id?t.color+'80':'var(--border)'}`,
+                background:type===t.id?t.color+'12':'var(--card2)',
+                cursor:'pointer',transition:'all .15s'}}>
+              <span style={{fontSize:18}}>{t.icon}</span>
+              <span style={{fontSize:12,fontWeight:600,color:type===t.id?t.color:'var(--text-dim)'}}>{t.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="form-group"><label className="form-label">Note (optional)</label>
+        <input className="form-input" value={note} onChange={e=>setNote(e.target.value)} placeholder="Must-try dish, opening hours…"/>
+      </div>
+    </Modal>
+  );
+}
+
+function DonutChart({byType,total,size=110,sw=11}){
+  const R=40,cx=size/2,cy=size/2;
+  const circ=2*Math.PI*R;
+  let cumAngle=0;
+  return(
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <circle cx={cx} cy={cy} r={R} fill="none" stroke="rgba(255,255,255,.05)" strokeWidth={sw}/>
+      {byType.map((t,i)=>{
+        const frac=t.total/total;
+        const segLen=frac*circ;
+        const angle=cumAngle;
+        cumAngle+=frac*360;
+        return(<circle key={i} cx={cx} cy={cy} r={R} fill="none" stroke={t.color} strokeWidth={sw}
+          strokeDasharray={`${segLen} ${circ}`} strokeDashoffset={0}
+          transform={`rotate(${angle-90} ${cx} ${cy})`} strokeLinecap="butt"/>);
+      })}
+    </svg>
+  );
+}
+
+function EventStatsCard({event}){
+  const total=event.expenses.reduce((s,e)=>s+e.amount,0);
+  const byType=EXPENSE_TYPES
+    .map(t=>({...t,total:event.expenses.filter(e=>e.type===t.id).reduce((s,e)=>s+e.amount,0)}))
+    .filter(t=>t.total>0).sort((a,b)=>b.total-a.total);
+  const maxType=byType[0]?.total||1;
+  if(!total)return null;
+  return(
+    <div className="card" style={{background:'#081628',border:'1px solid rgba(5,150,105,.18)',marginBottom:10,padding:'14px 16px'}}>
+      <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:byType.length?14:0}}>
+        <div style={{flex:1}}>
+          <div style={{fontSize:9,letterSpacing:2,textTransform:'uppercase',color:'var(--text-muted)',marginBottom:6}}>Total Amount</div>
+          <div style={{fontFamily:"'Space Mono',monospace",fontSize:26,fontWeight:700,color:'#059669',lineHeight:1}}>{fmtAmt(total)}</div>
+          <div style={{fontSize:11,color:'var(--text-muted)',marginTop:5}}>{event.expenses.length} expense{event.expenses.length!==1?'s':''}</div>
+        </div>
+        <div style={{position:'relative',flexShrink:0}}>
+          <DonutChart byType={byType} total={total}/>
+          <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',pointerEvents:'none'}}>
+            <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,fontWeight:700,color:'#059669',lineHeight:1}}>{fmtShort(total)}</div>
+            <div style={{fontSize:8,color:'var(--text-muted)',marginTop:2,letterSpacing:1}}>total</div>
+          </div>
+        </div>
+      </div>
+      {byType.length>0&&<>
+        <div style={{fontSize:9,letterSpacing:2,textTransform:'uppercase',color:'var(--text-muted)',marginBottom:8}}>By Type</div>
+        {byType.map(t=>(
+          <div key={t.id} style={{marginBottom:9}}>
+            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+              <span style={{fontSize:16}}>{t.icon}</span>
+              <span style={{flex:1,fontSize:12,fontWeight:600,color:'var(--text)'}}>{t.label}</span>
+              <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,fontWeight:700,color:t.color}}>{fmtAmt(t.total)}</span>
+            </div>
+            <div style={{height:3,background:'rgba(255,255,255,.06)',borderRadius:2}}>
+              <div style={{height:'100%',width:`${t.total/maxType*100}%`,background:t.color,borderRadius:2}}/>
+            </div>
+          </div>
+        ))}
+      </>}
+    </div>
+  );
+}
+
+function PlacesSection({event,setEvents}){
+  const [showAdd,setShowAdd]=useState(false);
+  const [editPlace,setEditPlace]=useState(null);
+  const places=event.places||[];
+  const savePlace=p=>{
+    setEvents(es=>es.map(ev=>{
+      if(ev.id!==event.id)return ev;
+      const ps=editPlace?ev.places.map(x=>x.id===p.id?p:x):[...(ev.places||[]),p];
+      return{...ev,places:ps};
+    }));
+    setShowAdd(false);setEditPlace(null);
+  };
+  const deletePlace=id=>setEvents(es=>es.map(ev=>ev.id!==event.id?ev:{...ev,places:(ev.places||[]).filter(p=>p.id!==id)}));
+  return(
+    <div style={{marginTop:16}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+        <div className="section-label" style={{margin:0}}>Places</div>
+        <button className="btn btn-ghost btn-sm" style={{fontSize:10,padding:'4px 10px',minHeight:28}} onClick={()=>setShowAdd(true)}>＋ Add Place</button>
+      </div>
+      {places.length===0&&(
+        <div style={{textAlign:'center',padding:'16px 0',color:'var(--text-muted)',fontSize:12}}>No places added yet</div>
+      )}
+      {places.map(p=>{
+        const pt=PLACE_TYPES.find(t=>t.id===p.type)||PLACE_TYPES[PLACE_TYPES.length-1];
+        return(
+          <div key={p.id} className="card" style={{padding:'12px 14px',marginBottom:8,display:'flex',alignItems:'flex-start',gap:12}}>
+            <div style={{width:38,height:38,borderRadius:9,background:pt.color+'18',border:`1px solid ${pt.color}30`,
+              display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:20}}>{pt.icon}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:13,fontWeight:700,color:'var(--text)',marginBottom:2}}>{p.name}</div>
+              {p.address&&<div style={{fontSize:11,color:'var(--text-muted)',marginBottom:p.note?2:0}}>{p.address}</div>}
+              {p.note&&<div style={{fontSize:11,color:'var(--text-dim)',fontStyle:'italic'}}>{p.note}</div>}
+              <span style={{display:'inline-block',marginTop:4,fontSize:10,fontWeight:700,letterSpacing:1,textTransform:'uppercase',
+                padding:'2px 7px',borderRadius:3,background:pt.color+'15',color:pt.color,border:`1px solid ${pt.color}30`}}>{pt.label}</span>
+            </div>
+            <div style={{display:'flex',gap:6,flexShrink:0}}>
+              <button className="icon-btn" style={{width:28,height:28}} onClick={()=>setEditPlace(p)}><Ic n="edit" size={13}/></button>
+              <button className="icon-btn danger" style={{width:28,height:28}} onClick={()=>deletePlace(p.id)}><Ic n="trash" size={13}/></button>
+            </div>
+          </div>
+        );
+      })}
+      {showAdd&&<AddPlaceModal onSave={savePlace} onClose={()=>setShowAdd(false)}/>}
+      {editPlace&&<AddPlaceModal place={editPlace} onSave={savePlace} onClose={()=>setEditPlace(null)}/>}
+    </div>
+  );
+}
+
+function ExpenseActiveTab({event,events,people,setEvents,setActiveEventId}){
+  const [showAdd,setShowAdd]=useState(false);
+  const [editExp,setEditExp]=useState(null);
+  const [showSettle,setShowSettle]=useState(false);
+  const [showNewEvent,setShowNewEvent]=useState(false);
+  const [showAllExp,setShowAllExp]=useState(false);
+  const createEvent=ev=>{setEvents(es=>[...es,ev]);setActiveEventId(ev.id);setShowNewEvent(false)};
+  if(!event){
+    return(
+      <div>
+        <div className="empty" style={{paddingBottom:24}}>
+          <div className="empty-icon"><Ic n="expense" size={28}/></div>
+          <div className="empty-text">No active event</div>
+          <div className="empty-sub" style={{marginBottom:20}}>Create a new event to start tracking expenses</div>
+          <button className="btn btn-primary" style={{background:'linear-gradient(135deg,#047857,#059669)'}} onClick={()=>setShowNewEvent(true)}>＋ New Event</button>
+        </div>
+        {showNewEvent&&<NewEventModal people={people} onSave={createEvent} onClose={()=>setShowNewEvent(false)}/>}
+      </div>
+    );
+  }
+  const addOrEdit=exp=>{
+    setEvents(es=>es.map(ev=>{
+      if(ev.id!==event.id)return ev;
+      const exps=editExp?ev.expenses.map(e=>e.id===exp.id?exp:e):[...ev.expenses,exp];
+      return{...ev,expenses:exps};
+    }));
+    setShowAdd(false);setEditExp(null);
+  };
+  const deleteExp=id=>setEvents(es=>es.map(ev=>ev.id===event.id?{...ev,expenses:ev.expenses.filter(e=>e.id!==id)}:ev));
+  const finishEvent=()=>{
+    const txns=settle.transactions.map(t=>({fromId:t.from.id,toId:t.to.id,amount:t.amount}));
+    setEvents(es=>es.map(ev=>ev.id===event.id?{...ev,finished:true,settlement:{transactions:txns,settledAt:Date.now()}}:ev));
+    setActiveEventId(null);setShowSettle(false);
+  };
+  const settle=calcSettlement(event,people);
+  const byDate=[...event.expenses].sort((a,b)=>b.date.localeCompare(a.date));
+  const total=settle.total;
+  const byType=EXPENSE_TYPES.map(t=>({...t,total:event.expenses.filter(e=>e.type===t.id).reduce((s,e)=>s+e.amount,0)})).filter(t=>t.total>0).sort((a,b)=>b.total-a.total);
+  const maxType=byType[0]?.total||1;
+  return(
+    <div>
+      <div className="section-label" style={{marginTop:16}}>Active Event</div>
+      <div className="card">
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+          <div><div className="card-title">{event.name}</div>
+            <div className="card-sub">{event.place&&`${event.place} · `}{fmtDate(event.startDate)}–{fmtDate(event.endDate)} · {event.memberIds.length} members</div>
+          </div>
+          <span className="badge badge-green">Active</span>
+        </div>
+        <div style={{textAlign:'center',margin:'10px 0',padding:'12px 16px',border:'1px solid rgba(5,150,105,.3)',borderRadius:10,background:'rgba(5,150,105,.06)'}}>
+          <div style={{fontFamily:"'Space Mono',monospace",fontSize:30,fontWeight:700,color:'#059669',lineHeight:1}}>{fmtAmt(total)}</div>
+          <div style={{fontSize:11,color:'var(--text-muted)',marginTop:5}}>{event.expenses.length} expense{event.expenses.length!==1?'s':''} · {fmtAmt(settle.share)} per person</div>
+        </div>
+        {byType.length>0&&<>
+          <div className="accent-line" style={{margin:'10px 0'}}/>
+          <div style={{display:'flex',gap:14,alignItems:'flex-start'}}>
+            <div style={{position:'relative',flexShrink:0}}>
+              <DonutChart byType={byType} total={total} size={100} sw={16}/>
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              {byType.map(t=>(
+                <div key={t.id} style={{marginBottom:7}}>
+                  <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:3}}>
+                    <span style={{fontSize:14,lineHeight:1}}>{t.icon}</span>
+                    <span style={{flex:1,fontSize:11,fontWeight:600,color:'var(--text)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{t.label}</span>
+                    <span style={{fontFamily:"'Space Mono',monospace",fontSize:10,fontWeight:700,color:t.color,flexShrink:0}}>{fmtAmt(t.total)} <span style={{color:'var(--text-muted)',fontWeight:400}}>{Math.round(t.total/total*100)}%</span></span>
+                  </div>
+                  <div style={{height:2,background:'rgba(255,255,255,.06)',borderRadius:1}}>
+                    <div style={{height:'100%',width:`${t.total/maxType*100}%`,background:t.color,borderRadius:1}}/>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>}
+        {byDate.length>0&&<>
+          <div className="accent-line" style={{margin:'12px 0 8px'}}/>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
+            <div className="section-label" style={{fontSize:9,margin:0}}>Expenses ({byDate.length})</div>
+            {byDate.length>5&&<button className="btn btn-ghost btn-sm" style={{fontSize:10,padding:'3px 8px',minHeight:26}} onClick={()=>setShowAllExp(v=>!v)}>{showAllExp?'Show less':'Show all'}</button>}
+          </div>
+          {(showAllExp?byDate:byDate.slice(0,5)).map(e=>{
+            const et=EXPENSE_TYPES.find(t=>t.id===e.type)||EXPENSE_TYPES[EXPENSE_TYPES.length-1];
+            const payer=people.find(p=>p.id===e.picId);
+            return(
+              <div key={e.id} className="list-row">
+                <span style={{fontSize:20}}>{et.icon}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:12,fontWeight:700,color:'var(--text)'}}>{et.label}{e.note?` · ${e.note}`:''}</div>
+                  <div style={{fontSize:10,color:'var(--text-muted)'}}>Paid by {payer?.name} · {fmtDate(e.date)}</div>
+                </div>
+                <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,fontWeight:600,color:'#059669',marginRight:6}}>{fmtAmt(e.amount)}</span>
+                <button className="icon-btn" style={{width:28,height:28}} onClick={()=>setEditExp(e)}><Ic n="edit" size={13}/></button>
+                <button className="icon-btn danger" style={{width:28,height:28,fontSize:12}} onClick={()=>deleteExp(e.id)}>🗑</button>
+              </div>
+            );
+          })}
+        </>}
+      </div>
+      <button className="btn btn-primary btn-full" style={{background:'linear-gradient(135deg,#047857,#059669)',marginBottom:8}} onClick={()=>setShowAdd(true)}>＋ Add Expense</button>
+      <button className="btn btn-ghost btn-full btn-sm" onClick={()=>setShowSettle(true)}><Ic n="settle" size={14}/> Settle Up</button>
+      {showAdd&&<AddExpenseModal event={event} people={people} onSave={addOrEdit} onClose={()=>setShowAdd(false)}/>}
+      {editExp&&<AddExpenseModal event={event} people={people} expense={editExp} onSave={addOrEdit} onClose={()=>setEditExp(null)}/>}
+      <PlacesSection event={event} setEvents={setEvents}/>
+      {showSettle&&(
+        <Modal title="Settlement" onClose={()=>setShowSettle(false)}
+          footer={<><button className="btn btn-ghost btn-full" onClick={()=>setShowSettle(false)}>Close</button>
+            <button className="btn btn-danger btn-full" onClick={finishEvent}>Finish Event</button></>}>
+          {settle.transactions.length>0&&<>
+            <div className="section-label">Transfers</div>
+            {settle.transactions.map((t,i)=>(
+              <div key={i} className="card" style={{padding:'10px 14px',display:'flex',alignItems:'center',gap:8}}>
+                <span style={{fontSize:16}}>{t.from.avatar}</span>
+                <span style={{fontSize:12,fontWeight:700,color:t.from.color}}>{t.from.name}</span>
+                <span style={{fontSize:12,color:'var(--text-muted)',flex:1,textAlign:'center'}}>→</span>
+                <span style={{fontSize:16}}>{t.to.avatar}</span>
+                <span style={{fontSize:12,fontWeight:700,color:t.to.color}}>{t.to.name}</span>
+                <span style={{fontFamily:"'Space Mono',monospace",fontSize:13,fontWeight:700,color:'#059669'}}>{fmtAmt(t.amount)}</span>
+              </div>
+            ))}
+          </>}
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+function ExpenseHistoryTab({events,people,setEvents,setActiveEventId}){
+  const [detail,setDetail]=useState(null);
+  const [editExp,setEditExp]=useState(null);
+  const sorted=[...events].sort((a,b)=>b.createdAt-a.createdAt);
+  const deleteEvent=id=>{setEvents(es=>es.filter(e=>e.id!==id));setDetail(null)};
+  const reopenEvent=id=>{setEvents(es=>es.map(e=>e.id===id?{...e,finished:false}:e));setActiveEventId(id);setDetail(null)};
+  const saveExp=(evId,exp)=>setEvents(es=>es.map(ev=>{
+    if(ev.id!==evId)return ev;
+    return{...ev,expenses:ev.expenses.map(e=>e.id===exp.id?exp:e)};
+  }));
+  const deleteExp=(evId,eid)=>setEvents(es=>es.map(ev=>ev.id!==evId?ev:{...ev,expenses:ev.expenses.filter(e=>e.id!==eid)}));
+  if(detail){
+    const ev=events.find(e=>e.id===detail);
+    if(!ev){setDetail(null);return null;}
+    const settle=calcSettlement(ev,people);
+    const histByType=EXPENSE_TYPES.map(t=>({...t,total:ev.expenses.filter(e=>e.type===t.id).reduce((s,e)=>s+e.amount,0)})).filter(t=>t.total>0).sort((a,b)=>b.total-a.total);
+    const histMaxType=histByType[0]?.total||1;
+    const histTotal=settle.total;
+    return(
+      <div>
+        <button className="btn btn-ghost btn-sm" style={{marginTop:16,marginBottom:8}} onClick={()=>setDetail(null)}>‹ Back</button>
+        <div className="card">
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+            <div><div className="card-title">{ev.name}</div>
+              <div className="card-sub">{ev.place&&`${ev.place} · `}{fmtDate(ev.startDate)} – {fmtDate(ev.endDate)} · {ev.memberIds.length} members</div>
+            </div>
+            {ev.finished?<span className="badge badge-blue">Done</span>:<span className="badge badge-green">Active</span>}
+          </div>
+          <div style={{textAlign:'center',margin:'4px 0 10px',padding:'12px 16px',border:'1px solid rgba(5,150,105,.3)',borderRadius:10,background:'rgba(5,150,105,.06)'}}>
+            <div style={{fontFamily:"'Space Mono',monospace",fontSize:30,fontWeight:700,color:'#059669',lineHeight:1}}>{fmtAmt(histTotal)}</div>
+            <div style={{fontSize:11,color:'var(--text-muted)',marginTop:5}}>{ev.expenses.length} expense{ev.expenses.length!==1?'s':''} · {fmtAmt(settle.share)} per person</div>
+          </div>
+          {histByType.length>0&&<>
+            <div className="accent-line" style={{margin:'10px 0'}}/>
+            <div style={{display:'flex',gap:14,alignItems:'flex-start'}}>
+              <div style={{flexShrink:0}}>
+                <DonutChart byType={histByType} total={histTotal} size={100} sw={16}/>
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                {histByType.map(t=>(
+                  <div key={t.id} style={{marginBottom:7}}>
+                    <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:3}}>
+                      <span style={{fontSize:14,lineHeight:1}}>{t.icon}</span>
+                      <span style={{flex:1,fontSize:11,fontWeight:600,color:'var(--text)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{t.label}</span>
+                      <span style={{fontFamily:"'Space Mono',monospace",fontSize:10,fontWeight:700,color:t.color,flexShrink:0}}>{fmtAmt(t.total)} <span style={{color:'var(--text-muted)',fontWeight:400}}>{Math.round(t.total/histTotal*100)}%</span></span>
+                    </div>
+                    <div style={{height:2,background:'rgba(255,255,255,.06)',borderRadius:1}}>
+                      <div style={{height:'100%',width:`${t.total/histMaxType*100}%`,background:t.color,borderRadius:1}}/>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>}
+          {ev.expenses.length>0&&<>
+            <div className="accent-line" style={{margin:'12px 0 8px'}}/>
+            <div className="section-label" style={{fontSize:9,margin:'0 0 4px'}}>Expenses ({ev.expenses.length})</div>
+            {ev.expenses.map(e=>{
+              const et=EXPENSE_TYPES.find(t=>t.id===e.type)||EXPENSE_TYPES[EXPENSE_TYPES.length-1];
+              const payer=people.find(p=>p.id===e.picId);
+              return(
+                <div key={e.id} className="list-row">
+                  <span style={{fontSize:20}}>{et.icon}</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:12,fontWeight:700}}>{et.label}{e.note?` · ${e.note}`:''}</div>
+                    <div style={{fontSize:10,color:'var(--text-muted)'}}>Paid by {payer?.name} · {fmtDate(e.date)}</div>
+                  </div>
+                  <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,fontWeight:600,color:'#059669',marginRight:6}}>{fmtAmt(e.amount)}</span>
+                  <button className="icon-btn" style={{width:28,height:28}} onClick={()=>setEditExp(e)}><Ic n="edit" size={13}/></button>
+                  <button className="icon-btn danger" style={{width:28,height:28}} onClick={()=>deleteExp(ev.id,e.id)}><Ic n="trash" size={13}/></button>
+                </div>
+              );
+            })}
+          </>}
+          {ev.settlement&&ev.settlement.transactions.length>0&&<>
+            <div className="accent-line" style={{margin:'12px 0 8px'}}/>
+            <div className="section-label" style={{fontSize:9,margin:'0 0 4px'}}>Settlement</div>
+            {ev.settlement.transactions.map((t,i)=>{
+              const from=people.find(p=>p.id===t.fromId);
+              const to=people.find(p=>p.id===t.toId);
+              return(
+                <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 0',borderBottom:i<ev.settlement.transactions.length-1?'1px solid var(--border)':''}}>
+                  <span style={{fontSize:16}}>{from?.avatar}</span>
+                  <span style={{fontSize:12,fontWeight:700,color:from?.color}}>{from?.name}</span>
+                  <Ic n="settle" size={13} style={{color:'var(--text-muted)',flexShrink:0}}/>
+                  <span style={{fontSize:16}}>{to?.avatar}</span>
+                  <span style={{fontSize:12,fontWeight:700,color:to?.color,flex:1}}>{to?.name}</span>
+                  <span style={{fontFamily:"'Space Mono',monospace",fontSize:13,fontWeight:700,color:'#059669'}}>{fmtAmt(t.amount)}</span>
+                </div>
+              );
+            })}
+            <div style={{fontSize:10,color:'var(--text-muted)',marginTop:8,letterSpacing:.5}}>Settled {fmtDate(new Date(ev.settlement.settledAt).toISOString().split('T')[0])}</div>
+          </>}
+        </div>
+        <div style={{display:'flex',gap:8,marginTop:10}}>
+          {ev.finished&&<button className="btn btn-ghost btn-full btn-sm" onClick={()=>reopenEvent(ev.id)}><Ic n="reopen" size={13}/> Reopen</button>}
+          <button className="btn btn-danger btn-full btn-sm" onClick={()=>deleteEvent(ev.id)}>Delete Event</button>
+        </div>
+        {editExp&&<AddExpenseModal event={ev} people={people} expense={editExp} onSave={exp=>{saveExp(ev.id,exp);setEditExp(null)}} onClose={()=>setEditExp(null)}/>}
+      </div>
+    );
+  }
+  return(
+    <div>
+      <div className="section-label" style={{marginTop:16}}>Events</div>
+      {!sorted.length&&<div className="empty"><div className="empty-icon"><Ic n="expense" size={28}/></div><div className="empty-text">No events yet</div></div>}
+      {sorted.map(ev=>{
+        const total=ev.expenses.reduce((s,e)=>s+e.amount,0);
+        return(
+          <div key={ev.id} className="card" style={{cursor:'pointer'}} onClick={()=>setDetail(ev.id)}>
+            <div style={{display:'flex',alignItems:'center',gap:12}}>
+              <span style={{color:'#059669',opacity:.7}}><Ic n="expense" size={22}/></span>
+              <div style={{flex:1}}>
+                <div className="card-title">{ev.name}</div>
+                <div className="card-sub">{ev.place&&`${ev.place} · `}{fmtDate(ev.startDate)} · {ev.expenses.length} items</div>
+              </div>
+              <div style={{textAlign:'right'}}>
+                <div style={{fontFamily:"'Space Mono',monospace",fontSize:12,fontWeight:600,color:'#059669'}}>{fmtAmt(total)}</div>
+                {ev.finished?<span className="badge badge-blue" style={{fontSize:9}}>Done</span>:<span className="badge badge-green" style={{fontSize:9}}>Active</span>}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ExpenseDashboardTab({events,people}){
+  const allExp=events.flatMap(ev=>ev.expenses);
+  const total=allExp.reduce((s,e)=>s+e.amount,0);
+  const byPerson=people.map(p=>{
+    const paid=allExp.filter(e=>e.picId===p.id).reduce((s,e)=>s+e.amount,0);
+    return{...p,paid};
+  }).sort((a,b)=>b.paid-a.paid);
+  const maxPaid=Math.max(...byPerson.map(p=>p.paid),1);
+  const byType=EXPENSE_TYPES.map(t=>({...t,total:allExp.filter(e=>e.type===t.id).reduce((s,e)=>s+e.amount,0)})).filter(t=>t.total>0).sort((a,b)=>b.total-a.total);
+  const byEvent=[...events].map(ev=>({...ev,evTotal:ev.expenses.reduce((s,e)=>s+e.amount,0)})).sort((a,b)=>b.evTotal-a.evTotal);
+  const maxEvent=Math.max(...byEvent.map(e=>e.evTotal),1);
+  return(
+    <div>
+      <div className="stat-grid" style={{marginTop:16}}>
+        {[{v:events.length,l:'Events'},{v:allExp.length,l:'Expenses'},{v:fmtShort(total),l:'Total ₫'}].map(s=>(
+          <div key={s.l} className="stat-box"><div className="stat-val" style={{color:'#059669',fontSize:17}}>{s.v}</div><div className="stat-lbl">{s.l}</div></div>
+        ))}
+      </div>
+      {byEvent.some(e=>e.evTotal>0)&&<>
+        <div className="section-label">By Event</div>
+        {byEvent.filter(e=>e.evTotal>0).map(ev=>(
+          <div key={ev.id} style={{marginBottom:12}}>
+            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:12,fontWeight:700,color:'var(--text)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{ev.name}</div>
+                <div style={{fontSize:10,color:'var(--text-muted)'}}>{ev.place?`${ev.place} · `:''}
+                  {fmtDate(ev.startDate)} · {ev.expenses.length} items
+                  {ev.finished?<span className="badge badge-blue" style={{fontSize:8,marginLeft:5}}>Done</span>:<span className="badge badge-green" style={{fontSize:8,marginLeft:5}}>Active</span>}
+                </div>
+              </div>
+              <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,fontWeight:700,color:'#059669',flexShrink:0}}>{fmtAmt(ev.evTotal)}</span>
+            </div>
+            <div style={{height:6,background:'rgba(255,255,255,.06)',borderRadius:3}}>
+              <div style={{height:'100%',width:`${ev.evTotal/maxEvent*100}%`,background:'linear-gradient(90deg,#04785780,#059669)',borderRadius:3}}/>
+            </div>
+          </div>
+        ))}
+      </>}
+      <div className="section-label">By Person</div>
+      {!byPerson.some(p=>p.paid>0)&&<div style={{color:'var(--text-muted)',fontSize:12,padding:'12px 0'}}>No expenses yet</div>}
+      {byPerson.filter(p=>p.paid>0).map(p=>(
+        <div key={p.id} style={{marginBottom:12}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
+            <span style={{fontSize:18}}>{p.avatar}</span>
+            <span style={{flex:1,fontSize:12,fontWeight:700,color:p.color}}>{p.name}</span>
+            <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,fontWeight:600,color:'#059669'}}>{fmtAmt(p.paid)}</span>
+          </div>
+          <div className="progress"><div className="progress-fill" style={{width:`${p.paid/maxPaid*100}%`,background:`linear-gradient(90deg,${p.color}80,${p.color})`}}/></div>
+        </div>
+      ))}
+      {byType.length>0&&<>
+        <div className="section-label">By Category</div>
+        {byType.map(t=>(
+          <div key={t.id} className="list-row">
+            <span style={{fontSize:20}}>{t.icon}</span>
+            <span style={{flex:1,fontSize:13,fontWeight:600}}>{t.label}</span>
+            <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,color:'#059669'}}>{fmtAmt(t.total)}</span>
+          </div>
+        ))}
+      </>}
+    </div>
+  );
+}
+
+function ExpenseModule({onBack,people,events,setEvents,activeEventId,setActiveEventId}){
+  const [tab,setTab]=useState('expense');
+  const COL='#059669';
+  const activeEvent=events.find(e=>e.id===activeEventId&&!e.finished)||null;
+  const tabs=[{id:'expense',icon:'expense',label:'Expense'},{id:'history',icon:'history',label:'History'},{id:'stats',icon:'stats',label:'Stats'}];
+  return(
+    <>
+      <div className="module-header">
+        <button className="back-btn" onClick={onBack}><Ic n="back" size={14}/> Home</button>
+        <div className="module-name" style={{color:COL}}>Expenses</div>
+      </div>
+      <div className="screen fade" style={{'--mod-col':COL}}>
+        <div style={{display:tab==='expense'?'block':'none'}}>
+          <ExpenseActiveTab event={activeEvent} events={events} people={people} setEvents={setEvents} setActiveEventId={setActiveEventId}/>
+        </div>
+        <div style={{display:tab==='history'?'block':'none'}}>
+          <ExpenseHistoryTab events={events} people={people} setEvents={setEvents} setActiveEventId={setActiveEventId}/>
+        </div>
+        <div style={{display:tab==='stats'?'block':'none'}}>
+          <ExpenseDashboardTab events={events} people={people}/>
+        </div>
+      </div>
+      <div className="bottom-nav" style={{'--mod-col':COL}}>
+        {tabs.map(t=>(
+          <button key={t.id} className={`nav-item${tab===t.id?' active':''}`} onClick={()=>setTab(t.id)}>
+            <span className="nav-icon"><Ic n={t.icon} size={20}/></span>{t.label}
+          </button>
+        ))}
+      </div>
+    </>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// VIETLOTT MODULE
+// ══════════════════════════════════════════════════════════════════════════
+const matchInfo=(winNums,userNums,bonusNum)=>{
+  const matched=winNums.filter(n=>userNums.includes(n)).length;
+  const bonusMatch=bonusNum!=null&&userNums.includes(bonusNum);
+  return{matched,bonusMatch};
+};
+const prizeTier=(matched,bonusMatch)=>{
+  if(matched===6)return{label:'Jackpot 1!',cls:'badge-amber'};
+  if(matched===5&&bonusMatch)return{label:'Jackpot 2',cls:'badge-amber'};
+  if(matched===5)return{label:'Prize 3',cls:'badge-green'};
+  if(matched===4)return{label:'Prize 4',cls:'badge-blue'};
+  if(matched===3)return{label:'Prize 5',cls:'badge-blue'};
+  return{label:'No prize',cls:'badge-blue'};
+};
+const computeHotNumbers=(results,type,topN=8)=>{
+  const freq={};
+  results.filter(r=>r.type===type).forEach(r=>{
+    r.numbers.forEach(n=>{freq[n]=(freq[n]||0)+1});
+  });
+  return Object.entries(freq).map(([n,c])=>({n:Number(n),c})).sort((a,b)=>b.c-a.c).slice(0,topN);
+};
+
+function AddDrawModal({onSave,onClose,vietSettings,draw}){
+  const [type,setType]=useState(draw?.type||'645');
+  const [date,setDate]=useState(draw?.date||todayStr);
+  const [nums,setNums]=useState(draw?.numbers||[]);
+  const [bonus,setBonus]=useState(draw?.bonus!=null?String(draw.bonus):'');
+  const max=type==='645'?45:55;
+  const toggleNum=n=>setNums(ns=>ns.includes(n)?ns.filter(x=>x!==n):[...ns,n].slice(0,6));
+  const save=()=>{
+    if(nums.length!==6)return;
+    onSave({id:draw?.id||uid(),date,type,numbers:[...nums].sort((a,b)=>a-b),bonus:bonus?Number(bonus):null,prize:draw?.prize||0,jackpot:draw?.jackpot||null});
+  };
+  return(
+    <Modal title={draw?'Edit Draw Result':'Add Draw Result'} onClose={onClose}
+      footer={<><button className="btn btn-ghost btn-full" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary btn-full" onClick={save} disabled={nums.length!==6}
+          style={{background:'linear-gradient(135deg,#92400e,#d97706)'}}>Save ({nums.length}/6)</button></>}>
+      <div style={{display:'flex',gap:8,marginBottom:12}}>
+        {['645','655'].map(t=>(
+          <button key={t} className={`tab-pill${type===t?' active':''}`} style={{'--mod-col':'#d97706'}} onClick={()=>{setType(t);setNums([])}}>6/{t.replace('6','').replace('45','45').replace('55','55')}</button>
+        ))}
+      </div>
+      <div className="form-group"><label className="form-label">Date</label>
+        <input type="date" className="form-input" value={date} onChange={e=>setDate(e.target.value)}/>
+      </div>
+      <div className="form-group">
+        <label className="form-label">Winning Numbers (pick 6 of 1–{max})</label>
+        <div className="num-grid" style={{gridTemplateColumns:`repeat(${max<=45?9:10},1fr)`}}>
+          {Array.from({length:max},(_,i)=>i+1).map(n=>(
+            <div key={n} className={`num-cell${nums.includes(n)?' selected':''}`} style={{'--mod-col':'#d97706'}} onClick={()=>toggleNum(n)}>{n}</div>
+          ))}
+        </div>
+      </div>
+      {type==='655'&&(
+        <div className="form-group"><label className="form-label">Bonus Number (optional)</label>
+          <input type="number" className="form-input" value={bonus} onChange={e=>setBonus(e.target.value)} placeholder="Bonus" min={1} max={55}/>
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+function AddFundModal({people,onSave,onClose,fund}){
+  const [date,setDate]=useState(fund?.date||todayStr);
+  const [amount,setAmount]=useState(fund?.amount||'');
+  const [person,setPerson]=useState(fund?.person||people[0]?.name||'');
+  const [note,setNote]=useState(fund?.note||'');
+  const save=()=>{if(!amount||!person)return;onSave({id:fund?.id||uid(),date,amount:Number(amount),person,note:note.trim()})};
+  return(
+    <Modal title={fund?'Edit Contribution':'Add Contribution'} onClose={onClose}
+      footer={<><button className="btn btn-ghost btn-full" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary btn-full" onClick={save} disabled={!amount}
+          style={{background:'linear-gradient(135deg,#92400e,#d97706)'}}>Save</button></>}>
+      <div className="form-group"><label className="form-label">Date</label>
+        <input type="date" className="form-input" value={date} onChange={e=>setDate(e.target.value)}/></div>
+      <div className="form-group"><label className="form-label">Person</label>
+        <div className="people-row">{people.map(p=>(
+          <div key={p.id} className={`person-chip${person===p.name?' selected':''}`} onClick={()=>setPerson(p.name)}>
+            <span className="person-avatar">{p.avatar}</span>
+            <span className="person-name" style={{color:person===p.name?'var(--accent)':p.color}}>{p.name}</span>
+          </div>
+        ))}</div></div>
+      <div className="form-group"><label className="form-label">Amount (₫)</label>
+        <input type="number" className="form-input" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0"/></div>
+      <div className="form-group"><label className="form-label">Note (optional)</label>
+        <input className="form-input" value={note} onChange={e=>setNote(e.target.value)} placeholder=""/></div>
+    </Modal>
+  );
+}
+
+function VietlottDashTab({vietData,vietSettings}){
+  const {results,funds}=vietData;
+  const totalFund=funds.reduce((s,f)=>s+f.amount,0);
+  const totalSpent=results.length*10000;
+  const net=totalFund-totalSpent;
+  const latest645=results.filter(r=>r.type==='645').sort((a,b)=>b.date.localeCompare(a.date))[0];
+  const latest655=results.filter(r=>r.type==='655').sort((a,b)=>b.date.localeCompare(a.date))[0];
+  const hot645=computeHotNumbers(results,'645',8);
+  const hot655=computeHotNumbers(results,'655',8);
+  const DrawCard=({r,label,userNums})=>{
+    if(!r)return<div className="card"><div style={{color:'var(--text-muted)',fontSize:12}}>No {label} results yet</div></div>;
+    const{matched,bonusMatch}=matchInfo(r.numbers,userNums||[],r.bonus);
+    const tier=prizeTier(matched,bonusMatch);
+    return(
+      <div className="card">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+          <span style={{fontSize:11,color:'var(--text-dim)',fontWeight:600}}>{fmtDate(r.date)}</span>
+          <div style={{display:'flex',gap:6}}>
+            <span className="badge badge-amber">{label}</span>
+            {matched>0&&<span className={`badge ${tier.cls}`}>{tier.label}</span>}
+          </div>
+        </div>
+        <div className="balls">
+          {r.numbers.map(n=><div key={n} className={`ball${(userNums||[]).includes(n)?' win':''}`}>{n}</div>)}
+          {r.bonus!=null&&<div className="ball bonus">{r.bonus}</div>}
+        </div>
+        {(userNums||[]).length>0&&<div style={{marginTop:8,fontSize:10,color:'var(--text-muted)'}}>Your numbers: {matched} match{bonusMatch?' + bonus':''}</div>}
+      </div>
+    );
+  };
+  return(
+    <div>
+      <div className="stat-grid" style={{marginTop:16}}>
+        {[{v:fmtShort(totalFund),l:'Fund',c:'#d97706'},{v:fmtShort(totalSpent),l:'Spent',c:'#dc2626'},{v:(net>=0?'+':'')+fmtShort(net),l:'Net',c:net>=0?'#059669':'#dc2626'}].map(s=>(
+          <div key={s.l} className="stat-box"><div className="stat-val" style={{color:s.c,fontSize:16}}>{s.v}</div><div className="stat-lbl">{s.l}</div></div>
+        ))}
+      </div>
+      <div className="section-label">Latest 6/45</div>
+      <DrawCard r={latest645} label="6/45" userNums={vietSettings.nums645}/>
+      <div className="section-label">Latest 6/55</div>
+      <DrawCard r={latest655} label="6/55" userNums={vietSettings.nums655}/>
+      {hot645.length>0&&<><div className="section-label">Hot Numbers — 6/45</div>
+        <div className="card"><div className="balls">{hot645.map(({n})=><div key={n} className="ball hot">{n}</div>)}</div></div></>}
+      {hot655.length>0&&<><div className="section-label">Hot Numbers — 6/55</div>
+        <div className="card"><div className="balls">{hot655.map(({n})=><div key={n} className="ball hot">{n}</div>)}</div></div></>}
+    </div>
+  );
+}
+
+function VietlottHistoryTab({vietData,setVietData,vietSettings}){
+  const [filter,setFilter]=useState('all');
+  const [showAdd,setShowAdd]=useState(false);
+  const [editDraw,setEditDraw]=useState(null);
+  const addDraw=r=>{setVietData(d=>({...d,results:[r,...d.results]}));setShowAdd(false)};
+  const saveDraw=r=>{setVietData(d=>({...d,results:d.results.map(x=>x.id===r.id?r:x)}));setEditDraw(null)};
+  const del=id=>setVietData(d=>({...d,results:d.results.filter(r=>r.id!==id)}));
+  const filtered=vietData.results.filter(r=>filter==='all'||r.type===filter).sort((a,b)=>b.date.localeCompare(a.date));
+  return(
+    <div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginTop:16,marginBottom:8}}>
+        <div style={{display:'flex',gap:6}}>
+          {[['all','All'],['645','6/45'],['655','6/55']].map(([v,l])=>(
+            <button key={v} className={`tab-pill${filter===v?' active':''}`} style={{'--mod-col':'#d97706'}} onClick={()=>setFilter(v)}>{l}</button>
+          ))}
+        </div>
+        <button className="btn btn-sm" style={{background:'linear-gradient(135deg,#92400e,#d97706)',color:'#fff',border:'none',minHeight:34,borderRadius:8,fontSize:11,fontWeight:700,cursor:'pointer',padding:'6px 10px'}} onClick={()=>setShowAdd(true)}>＋ Add</button>
+      </div>
+      {!filtered.length&&<div className="empty"><div className="empty-icon"><Ic n="lottery" size={28}/></div><div className="empty-text">No results yet</div></div>}
+      {filtered.map(r=>{
+        const userNums=r.type==='645'?vietSettings.nums645:vietSettings.nums655;
+        const{matched,bonusMatch}=matchInfo(r.numbers,userNums||[],r.bonus);
+        const tier=prizeTier(matched,bonusMatch);
+        return(
+          <div key={r.id} className="card" style={{padding:'12px 14px'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+              <span style={{fontSize:11,color:'var(--text-dim)',fontWeight:600}}>{fmtDate(r.date)}</span>
+              <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                <span className="badge badge-amber" style={{fontSize:9}}>{r.type==='645'?'6/45':'6/55'}</span>
+                {matched>0&&<span className={`badge ${tier.cls}`} style={{fontSize:9}}>{tier.label}</span>}
+                <button className="icon-btn" style={{width:24,height:24}} onClick={()=>setEditDraw(r)}><Ic n="edit" size={12}/></button>
+                <button className="icon-btn danger" style={{width:24,height:24,fontSize:11}} onClick={()=>del(r.id)}>✕</button>
+              </div>
+            </div>
+            <div className="balls" style={{gap:5}}>
+              {r.numbers.map(n=><div key={n} className={`ball${(userNums||[]).includes(n)?' win':''}`} style={{width:26,height:26,fontSize:10}}>{n}</div>)}
+              {r.bonus!=null&&<div className="ball bonus" style={{width:26,height:26,fontSize:10}}>{r.bonus}</div>}
+            </div>
+            {matched>0&&<div style={{marginTop:6,fontSize:10,color:'var(--text-muted)'}}>{matched} match{bonusMatch?' + bonus':''}</div>}
+          </div>
+        );
+      })}
+      {showAdd&&<AddDrawModal onSave={addDraw} onClose={()=>setShowAdd(false)} vietSettings={vietSettings}/>}
+      {editDraw&&<AddDrawModal draw={editDraw} onSave={saveDraw} onClose={()=>setEditDraw(null)} vietSettings={vietSettings}/>}
+    </div>
+  );
+}
+
+function VietlottFinanceTab({vietData,setVietData,people}){
+  const [showAdd,setShowAdd]=useState(false);
+  const [editFund,setEditFund]=useState(null);
+  const addFund=f=>{setVietData(d=>({...d,funds:[f,...d.funds]}));setShowAdd(false)};
+  const saveFund=f=>{setVietData(d=>({...d,funds:d.funds.map(x=>x.id===f.id?f:x)}));setEditFund(null)};
+  const delFund=id=>setVietData(d=>({...d,funds:d.funds.filter(f=>f.id!==id)}));
+  const totalFund=vietData.funds.reduce((s,f)=>s+f.amount,0);
+  const totalSpent=vietData.results.length*10000;
+  const remaining=totalFund-totalSpent;
+  const sorted=[...vietData.funds].sort((a,b)=>b.date.localeCompare(a.date));
+  return(
+    <div>
+      <div className="stat-grid" style={{marginTop:16}}>
+        {[{v:fmtShort(totalFund),l:'Total Fund',c:'#d97706'},{v:fmtShort(totalSpent),l:'Spent',c:'#dc2626'},{v:fmtShort(remaining),l:'Remaining',c:remaining>=0?'#059669':'#dc2626'}].map(s=>(
+          <div key={s.l} className="stat-box"><div className="stat-val" style={{color:s.c,fontSize:15}}>{s.v}</div><div className="stat-lbl">{s.l}</div></div>
+        ))}
+      </div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+        <div className="section-label" style={{margin:0}}>Contributions</div>
+        <button className="btn btn-sm" style={{background:'linear-gradient(135deg,#92400e,#d97706)',color:'#fff',border:'none',minHeight:34,borderRadius:8,fontSize:11,fontWeight:700,cursor:'pointer',padding:'6px 10px'}} onClick={()=>setShowAdd(true)}>＋ Add</button>
+      </div>
+      {!sorted.length&&<div className="empty"><div className="empty-icon"><Ic n="finance" size={28}/></div><div className="empty-text">No contributions yet</div></div>}
+      {sorted.map(f=>(
+        <div key={f.id} className="list-row">
+          <span style={{fontSize:18}}>{people.find(p=>p.name===f.person)?.avatar||'👤'}</span>
+          <div style={{flex:1}}>
+            <div style={{fontSize:13,fontWeight:700,color:'var(--text)'}}>{f.person}</div>
+            <div style={{fontSize:10,color:'var(--text-muted)'}}>{fmtDate(f.date)}{f.note?` · ${f.note}`:''}</div>
+          </div>
+          <span style={{fontFamily:"'Space Mono',monospace",fontSize:13,fontWeight:700,color:'#d97706'}}>{fmtAmt(f.amount)}</span>
+          <button className="icon-btn" style={{width:28,height:28,marginLeft:4}} onClick={()=>setEditFund(f)}><Ic n="edit" size={13}/></button>
+          <button className="icon-btn danger" style={{width:28,height:28,marginLeft:4}} onClick={()=>delFund(f.id)}><Ic n="trash" size={13}/></button>
+        </div>
+      ))}
+      {showAdd&&<AddFundModal people={people} onSave={addFund} onClose={()=>setShowAdd(false)}/>}
+      {editFund&&<AddFundModal people={people} fund={editFund} onSave={saveFund} onClose={()=>setEditFund(null)}/>}
+    </div>
+  );
+}
+
+function VietlottModule({onBack,people,vietData,setVietData,vietSettings}){
+  const [tab,setTab]=useState('dashboard');
+  const COL='#d97706';
+  const tabs=[{id:'dashboard',icon:'dashboard',label:'Dashboard'},{id:'history',icon:'history',label:'History'},{id:'finance',icon:'finance',label:'Finance'}];
+  return(
+    <>
+      <div className="module-header">
+        <button className="back-btn" onClick={onBack}><Ic n="back" size={14}/> Home</button>
+        <div className="module-name" style={{color:COL}}>Vietlott</div>
+      </div>
+      <div className="screen fade" style={{'--mod-col':COL}}>
+        <div style={{display:tab==='dashboard'?'block':'none'}}>
+          <VietlottDashTab vietData={vietData} vietSettings={vietSettings}/>
+        </div>
+        <div style={{display:tab==='history'?'block':'none'}}>
+          <VietlottHistoryTab vietData={vietData} setVietData={setVietData} vietSettings={vietSettings}/>
+        </div>
+        <div style={{display:tab==='finance'?'block':'none'}}>
+          <VietlottFinanceTab vietData={vietData} setVietData={setVietData} people={people}/>
+        </div>
+      </div>
+      <div className="bottom-nav" style={{'--mod-col':COL}}>
+        {tabs.map(t=>(
+          <button key={t.id} className={`nav-item${tab===t.id?' active':''}`} onClick={()=>setTab(t.id)}>
+            <span className="nav-icon"><Ic n={t.icon} size={20}/></span>{t.label}
+          </button>
+        ))}
+      </div>
+    </>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════════════════════════════
+function NumPicker({selected,setSelected,max,modCol}){
+  const toggle=n=>setSelected(s=>s.includes(n)?s.filter(x=>x!==n):[...s,n].slice(0,6));
+  const cols=max<=45?9:10;
+  return(
+    <div style={{display:'grid',gridTemplateColumns:`repeat(${cols},1fr)`,gap:4,marginTop:6}}>
+      {Array.from({length:max},(_,i)=>i+1).map(n=>(
+        <div key={n} className={`num-cell${selected.includes(n)?' selected':''}`}
+          style={{'--mod-col':modCol||'#d97706'}} onClick={()=>toggle(n)}>{n}</div>
+      ))}
+    </div>
+  );
+}
+
+function SettingsScreen({onBack,people,setPeople,settings,setSettings,rounds,setRounds,events,setEvents,vietData,setVietData,activeRoundId,setActiveRoundId,activeEventId,setActiveEventId}){
+  const [editPerson,setEditPerson]=useState(null);
+  const [addPerson,setAddPerson]=useState(false);
+  const [syncStatus,setSyncStatus]=useState('');
+  const [syncing,setSyncing]=useState(false);
+  const [syncToken,setSyncToken]=useState(()=>store.get('hf_sync_token',''));
+  const [syncGist,setSyncGist]=useState(()=>store.get('hf_sync_gist',''));
+
+  const savePerson=p=>{
+    setPeople(ps=>ps.some(x=>x.id===p.id)?ps.map(x=>x.id===p.id?p:x):[...ps,p]);
+    setEditPerson(null);setAddPerson(false);
+  };
+  const deletePerson=id=>setPeople(ps=>ps.filter(p=>p.id!==id));
+
+  const setCardPts=(key,val)=>setSettings(s=>({...s,card:{...s.card,[key]:Number(val)}}));
+  const setVietSetting=(key,val)=>setSettings(s=>({...s,vietlott:{...s.vietlott,[key]:val}}));
+
+  const pushToCloud=async()=>{
+    if(!syncToken||!syncGist){setSyncStatus('Enter token and gist ID first');return;}
+    setSyncing(true);setSyncStatus('Pushing…');
+    const data={people,settings,rounds,activeRoundId,events,activeEventId,vietData};
+    try{
+      const res=await fetch(`https://api.github.com/gists/${syncGist}`,{
+        method:'PATCH',headers:{'Authorization':`token ${syncToken}`,'Content-Type':'application/json'},
+        body:JSON.stringify({files:{'healing-family.json':{content:JSON.stringify(data,null,2)}}})
+      });
+      if(!res.ok)throw new Error(res.status);
+      store.set('hf_sync_token',syncToken);store.set('hf_sync_gist',syncGist);
+      setSyncStatus('Pushed successfully');
+    }catch(e){setSyncStatus('Push failed: '+e.message)}
+    setSyncing(false);
+  };
+  const pullFromCloud=async()=>{
+    if(!syncToken||!syncGist){setSyncStatus('Enter token and gist ID first');return;}
+    setSyncing(true);setSyncStatus('Pulling…');
+    try{
+      const res=await fetch(`https://api.github.com/gists/${syncGist}`,{headers:{'Authorization':`token ${syncToken}`}});
+      if(!res.ok)throw new Error(res.status);
+      const json=await res.json();
+      const content=json.files['healing-family.json']?.content;
+      if(!content)throw new Error('File not found in gist');
+      const d=JSON.parse(content);
+      if(d.people)setPeople(d.people);
+      if(d.settings)setSettings(d.settings);
+      if(d.rounds)setRounds(d.rounds);
+      if(d.activeRoundId!==undefined)setActiveRoundId(d.activeRoundId);
+      if(d.events)setEvents(d.events);
+      if(d.activeEventId!==undefined)setActiveEventId(d.activeEventId);
+      if(d.vietData)setVietData(d.vietData);
+      store.set('hf_sync_token',syncToken);store.set('hf_sync_gist',syncGist);
+      setSyncStatus('Pulled successfully');
+    }catch(e){setSyncStatus('Pull failed: '+e.message)}
+    setSyncing(false);
+  };
+
+  const cardPts=settings.card;
+  const vs=settings.vietlott;
+  return(
+    <>
+      <div className="module-header">
+        <button className="back-btn" onClick={onBack}><Ic n="back" size={14}/> Home</button>
+        <div className="module-name">Settings</div>
+      </div>
+      <div className="screen fade">
+        {/* People */}
+        <div className="section-label" style={{marginTop:16}}>People</div>
+        <div className="card">
+          {people.map(p=>(
+            <div key={p.id} className="settings-row">
+              <div style={{display:'flex',alignItems:'center',gap:10}}>
+                <span style={{fontSize:22}}>{p.avatar}</span>
+                <span style={{fontSize:14,fontWeight:700,color:p.color}}>{p.name}</span>
+              </div>
+              <div style={{display:'flex',gap:6}}>
+                <button className="icon-btn" style={{width:30,height:30}} onClick={()=>setEditPerson(p)}><Ic n="edit" size={13}/></button>
+                <button className="icon-btn danger" style={{width:30,height:30}} onClick={()=>deletePerson(p.id)}><Ic n="trash" size={13}/></button>
+              </div>
+            </div>
+          ))}
+          <button className="btn btn-ghost btn-full btn-sm" style={{marginTop:10}} onClick={()=>setAddPerson(true)}>＋ Add Person</button>
+        </div>
+
+        {/* Card Game Points */}
+        <div className="section-label">Card Game Points</div>
+        <div className="card">
+          {[['jackpot','Jackpot'],['first','1st Place'],['second','2nd Place'],['third','3rd Place'],['fourth','4th Place'],['penalty','Burned']].map(([k,l])=>(
+            <div key={k} className="settings-row">
+              <span className="settings-key">{l}</span>
+              <input type="number" className="settings-val" value={cardPts[k]??''} onChange={e=>setCardPts(k,e.target.value)}/>
+            </div>
+          ))}
+        </div>
+
+        {/* Vietlott */}
+        <div className="section-label">Vietlott</div>
+        <div className="card">
+          <div className="settings-row">
+            <span className="settings-key">Tracking from</span>
+            <input type="date" style={{fontFamily:"'Space Mono',monospace",fontSize:12,fontWeight:600,color:'#fbbf24',background:'var(--card2)',border:'1px solid var(--border2)',borderRadius:6,padding:'4px 8px',outline:'none',colorScheme:'dark'}}
+              value={vs.startDate} onChange={e=>setVietSetting('startDate',e.target.value)}/>
+          </div>
+          <div style={{marginTop:12}}>
+            <div style={{fontSize:10,color:'var(--text-muted)',fontWeight:700,textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>
+              6/45 — Lucky Numbers ({(vs.nums645||[]).length}/6)
+            </div>
+            <NumPicker selected={vs.nums645||[]} setSelected={v=>setVietSetting('nums645',v)} max={45} modCol="#d97706"/>
+          </div>
+          <div style={{marginTop:16}}>
+            <div style={{fontSize:10,color:'var(--text-muted)',fontWeight:700,textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>
+              6/55 — Lucky Numbers ({(vs.nums655||[]).length}/6)
+            </div>
+            <NumPicker selected={vs.nums655||[]} setSelected={v=>setVietSetting('nums655',v)} max={55} modCol="#d97706"/>
+          </div>
+        </div>
+
+        {/* Cloud Sync */}
+        <div className="section-label">Cloud Sync</div>
+        <div className="card">
+          <div className="form-group">
+            <label className="form-label">GitHub Personal Access Token</label>
+            <input className="form-input" type="password" value={syncToken} onChange={e=>setSyncToken(e.target.value)} placeholder="ghp_…"/>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Gist ID</label>
+            <input className="form-input" value={syncGist} onChange={e=>setSyncGist(e.target.value)} placeholder="Gist ID (from gist.github.com)"/>
+          </div>
+          {syncStatus&&<div style={{fontSize:11,color:syncStatus.startsWith('Pushed')||syncStatus.startsWith('Pulled')?'var(--success)':'var(--danger)',marginBottom:10,fontWeight:600}}>{syncStatus}</div>}
+          <div style={{display:'flex',gap:8}}>
+            <button className="btn btn-primary btn-full btn-sm" onClick={pushToCloud} disabled={syncing}><Ic n="upload" size={13}/> Push</button>
+            <button className="btn btn-ghost btn-full btn-sm" onClick={pullFromCloud} disabled={syncing}><Ic n="download" size={13}/> Pull</button>
+          </div>
+        </div>
+        {/* Danger Zone */}
+        <div className="section-label">Danger Zone</div>
+        <div className="card">
+          <div className="settings-row" style={{flexDirection:'column',alignItems:'flex-start',gap:6}}>
+            <span className="settings-key" style={{fontSize:12}}>Reset all app data</span>
+            <span style={{fontSize:10,color:'var(--text-muted)'}}>Clears rounds, events, Vietlott history and resets settings. People are kept.</span>
+          </div>
+          <button className="btn btn-danger btn-full btn-sm" style={{marginTop:8}} onClick={()=>{
+            if(!window.confirm('Reset all data? This cannot be undone.'))return;
+            setRounds([]);setActiveRoundId(null);
+            setEvents([]);setActiveEventId(null);
+            setVietData({results:[],funds:[],extras:[]});
+            setSettings(DEFAULT_SETTINGS);
+          }}>Reset All Data</button>
+        </div>
+        <div style={{height:24}}/>
+      </div>
+      {(editPerson||addPerson)&&<PersonModal person={editPerson||null} onSave={savePerson} onClose={()=>{setEditPerson(null);setAddPerson(false)}}/>}
+    </>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// HOME SCREEN
+// ══════════════════════════════════════════════════════════════════════════
+function HomeScreen({onModule,onSettings,rounds,activeRoundId,events,activeEventId}){
+  const hasActiveRound=rounds.some(r=>r.id===activeRoundId&&!r.finished);
+  const hasActiveEvent=events.some(e=>e.id===activeEventId&&!e.finished);
+  const modules=[
+    {id:'card',    icon:'card',    title:'Card Game',   tag:'TRACKER', desc:'Track rounds, hands, scores and player stats', col:'#6366f1', dot:hasActiveRound},
+    {id:'expense', icon:'expense', title:'Group Expense',tag:'SPLITTER',desc:'Log shared expenses and settle up instantly',  col:'#059669', dot:hasActiveEvent},
+    {id:'vietlott',icon:'lottery', title:'Vietlott',    tag:'LOTTERY', desc:'Track draws, match numbers, manage the group pool', col:'#d97706', dot:false},
+  ];
+  return(
+    <>
+      <div className="top-bar">
+        <span className="top-bar-title">Healing Family</span>
+        <button className="icon-btn" onClick={onSettings}><Ic n="settings" size={17}/></button>
+      </div>
+      <div className="screen fade">
+        <div className="home-hero">
+          <div className="home-logo"><Ic n="home" size={28}/></div>
+          <div className="home-title">Healing Family</div>
+          <div className="home-sub">Your family hub</div>
+        </div>
+        <div className="accent-line"/>
+        <div className="section-label">Modules</div>
+        {modules.map(m=>(
+          <div key={m.id} className={`module-card${m.dot?' has-dot':''}`} style={{'--mod-col':m.col}} onClick={()=>onModule(m.id)}>
+            <div className="mod-icon-wrap"><Ic n={m.icon} size={22}/></div>
+            <div className="mod-info">
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
+                <div className="mod-title">{m.title}</div>
+                {m.dot&&<span className="dot-live"/>}
+                <span className="mod-tag" style={{marginLeft:'auto',flexShrink:0,color:m.col,borderColor:m.col+'40',background:m.col+'10',border:'1px solid'}}>{m.tag}</span>
+              </div>
+              <div className="mod-desc">{m.desc}</div>
+            </div>
+          </div>
+        ))}
+        <div style={{height:16}}/>
+        <div style={{textAlign:'center',fontSize:10,color:'var(--text-muted)',letterSpacing:1.5,textTransform:'uppercase'}}>
+          Healing Family · 3 modules
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// APP ROOT
+// ══════════════════════════════════════════════════════════════════════════
+function App(){
+  const [people,setPeople]=useState(()=>store.get('hf_people',DEFAULT_PEOPLE));
+  const [settings,setSettings]=useState(()=>{const s=store.get('hf_settings',DEFAULT_SETTINGS);return{...DEFAULT_SETTINGS,...s,card:{...DEFAULT_SETTINGS.card,...(s.card||{})},vietlott:{...DEFAULT_SETTINGS.vietlott,...(s.vietlott||{})}};});
+  const [rounds,setRounds]=useState(()=>store.get('hf_rounds',[]));
+  const [activeRoundId,setActiveRoundId]=useState(()=>store.get('hf_active_round',null));
+  const [events,setEvents]=useState(()=>store.get('hf_events',[]));
+  const [activeEventId,setActiveEventId]=useState(()=>store.get('hf_active_event',null));
+  const [vietData,setVietData]=useState(()=>store.get('hf_viet',{results:[],funds:[],extras:[]}));
+  const [screen,setScreen]=useState('home');
+
+  useEffect(()=>store.set('hf_people',people),[people]);
+  useEffect(()=>store.set('hf_settings',settings),[settings]);
+  useEffect(()=>store.set('hf_rounds',rounds),[rounds]);
+  useEffect(()=>store.set('hf_active_round',activeRoundId),[activeRoundId]);
+  useEffect(()=>store.set('hf_events',events),[events]);
+  useEffect(()=>store.set('hf_active_event',activeEventId),[activeEventId]);
+  useEffect(()=>store.set('hf_viet',vietData),[vietData]);
+
+  const goHome=()=>setScreen('home');
+  const pts=settings.card;
+  const vietSettings=settings.vietlott;
+
+  return(
+    <div className="app">
+      <div className="bg-grid"/>
+      {screen==='home'&&<HomeScreen onModule={setScreen} onSettings={()=>setScreen('settings')} rounds={rounds} activeRoundId={activeRoundId} events={events} activeEventId={activeEventId}/>}
+      {screen==='card'&&<CardModule onBack={goHome} people={people} rounds={rounds} setRounds={setRounds} activeRoundId={activeRoundId} setActiveRoundId={setActiveRoundId} pts={pts}/>}
+      {screen==='expense'&&<ExpenseModule onBack={goHome} people={people} events={events} setEvents={setEvents} activeEventId={activeEventId} setActiveEventId={setActiveEventId}/>}
+      {screen==='vietlott'&&<VietlottModule onBack={goHome} people={people} vietData={vietData} setVietData={setVietData} vietSettings={vietSettings}/>}
+      {screen==='settings'&&<SettingsScreen onBack={goHome} people={people} setPeople={setPeople} settings={settings} setSettings={setSettings} rounds={rounds} setRounds={setRounds} events={events} setEvents={setEvents} vietData={vietData} setVietData={setVietData} activeRoundId={activeRoundId} setActiveRoundId={setActiveRoundId} activeEventId={activeEventId} setActiveEventId={setActiveEventId}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+
+</script>
+</body>
+</html>
