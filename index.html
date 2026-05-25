@@ -1609,12 +1609,16 @@ const prizeTier=(matched,bonusMatch)=>{
   if(matched===3)return{label:'Prize 5',cls:'badge-blue'};
   return{label:'No prize',cls:'badge-blue'};
 };
-const computeHotNumbers=(results,type,topN=8)=>{
+const computeHotNumbers=(results,type,topN=5)=>{
+  const cutoff=new Date();cutoff.setDate(cutoff.getDate()-30);
+  const cutStr=cutoff.toISOString().slice(0,10);
+  const recent=results.filter(r=>r.type===type&&r.date>=cutStr);
+  const total=recent.length;
+  if(!total)return[];
   const freq={};
-  results.filter(r=>r.type===type).forEach(r=>{
-    r.numbers.forEach(n=>{freq[n]=(freq[n]||0)+1});
-  });
-  return Object.entries(freq).map(([n,c])=>({n:Number(n),c})).sort((a,b)=>b.c-a.c).slice(0,topN);
+  recent.forEach(r=>{r.numbers.forEach(n=>{freq[n]=(freq[n]||0)+1});});
+  return Object.entries(freq).map(([n,c])=>({n:Number(n),c,pct:Math.round(c/total*100)}))
+    .sort((a,b)=>b.c-a.c).slice(0,topN);
 };
 
 function AddDrawModal({onSave,onClose,vietSettings,draw}){
@@ -1696,8 +1700,8 @@ function VietlottDashTab({vietData,setVietData,vietSettings}){
   const net=totalFund-totalSpent;
   const latest645=results.filter(r=>r.type==='645').sort((a,b)=>b.date.localeCompare(a.date))[0];
   const latest655=results.filter(r=>r.type==='655').sort((a,b)=>b.date.localeCompare(a.date))[0];
-  const hot645=computeHotNumbers(results,'645',8);
-  const hot655=computeHotNumbers(results,'655',8);
+  const hot645=computeHotNumbers(results,'645');
+  const hot655=computeHotNumbers(results,'655');
   const syncLatest=async()=>{
     setSyncing(true);setSyncMsg('');
     const BASE='https://raw.githubusercontent.com/vietvudanh/vietlott-data/main/data/';
@@ -1807,10 +1811,24 @@ function VietlottDashTab({vietData,setVietData,vietSettings}){
       <DrawCard r={latest645} label="6/45" userNums={vietSettings.nums645}/>
       <div className="section-label">Latest 6/55</div>
       <DrawCard r={latest655} label="6/55" userNums={vietSettings.nums655}/>
-      {hot645.length>0&&<><div className="section-label">Hot Numbers — 6/45</div>
-        <div className="card"><div className="balls">{hot645.map(({n})=><div key={n} className="ball hot">{n}</div>)}</div></div></>}
-      {hot655.length>0&&<><div className="section-label">Hot Numbers — 6/55</div>
-        <div className="card"><div className="balls">{hot655.map(({n})=><div key={n} className="ball hot">{n}</div>)}</div></div></>}
+      {hot645.length>0&&<><div className="section-label">Hot Numbers — 6/45 <span style={{fontWeight:400,textTransform:'none',letterSpacing:0,fontSize:10}}>(last 30 days)</span></div>
+        <div className="card"><div style={{display:'flex',gap:10,justifyContent:'space-between'}}>
+          {hot645.map(({n,pct})=>(
+            <div key={n} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+              <div className="ball hot">{n}</div>
+              <span style={{fontSize:10,fontWeight:700,color:'#d97706'}}>{pct}%</span>
+            </div>
+          ))}
+        </div></div></>}
+      {hot655.length>0&&<><div className="section-label">Hot Numbers — 6/55 <span style={{fontWeight:400,textTransform:'none',letterSpacing:0,fontSize:10}}>(last 30 days)</span></div>
+        <div className="card"><div style={{display:'flex',gap:10,justifyContent:'space-between'}}>
+          {hot655.map(({n,pct})=>(
+            <div key={n} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+              <div className="ball hot">{n}</div>
+              <span style={{fontSize:10,fontWeight:700,color:'#d97706'}}>{pct}%</span>
+            </div>
+          ))}
+        </div></div></>}
     </div>
   );
 }
@@ -1939,12 +1957,13 @@ function VietlottModule({onBack,people,vietData,setVietData,vietSettings}){
 // SETTINGS
 // ══════════════════════════════════════════════════════════════════════════
 function NumPicker({selected,setSelected,max,modCol}){
-  const toggle=n=>{const next=selected.includes(n)?selected.filter(x=>x!==n):[...selected,n].slice(0,6);setSelected(next);};
+  const sel=Array.isArray(selected)?selected:[];
+  const toggle=n=>{const next=sel.includes(n)?sel.filter(x=>x!==n):[...sel,n].slice(0,6);setSelected(next);};
   const cols=max<=45?9:10;
   return(
     <div style={{display:'grid',gridTemplateColumns:`repeat(${cols},1fr)`,gap:4,marginTop:6}}>
       {Array.from({length:max},(_,i)=>i+1).map(n=>(
-        <div key={n} className={`num-cell${selected.includes(n)?' selected':''}`}
+        <div key={n} className={`num-cell${sel.includes(n)?' selected':''}`}
           style={{'--mod-col':modCol||'#d97706'}} onClick={()=>toggle(n)}>{n}</div>
       ))}
     </div>
@@ -2157,7 +2176,13 @@ function HomeScreen({onModule,onSettings,rounds,activeRoundId,events,activeEvent
 // ══════════════════════════════════════════════════════════════════════════
 function App(){
   const [people,setPeople]=useState(()=>store.get('hf_people',DEFAULT_PEOPLE));
-  const [settings,setSettings]=useState(()=>{const s=store.get('hf_settings',DEFAULT_SETTINGS);return{...DEFAULT_SETTINGS,...s,card:{...DEFAULT_SETTINGS.card,...(s.card||{})},vietlott:{...DEFAULT_SETTINGS.vietlott,...(s.vietlott||{})}};});
+  const [settings,setSettings]=useState(()=>{
+    const s=store.get('hf_settings',DEFAULT_SETTINGS);
+    const vl={...DEFAULT_SETTINGS.vietlott,...(s.vietlott||{})};
+    if(!Array.isArray(vl.nums645))vl.nums645=[];
+    if(!Array.isArray(vl.nums655))vl.nums655=[];
+    return{...DEFAULT_SETTINGS,...s,card:{...DEFAULT_SETTINGS.card,...(s.card||{})},vietlott:vl};
+  });
   const [rounds,setRounds]=useState(()=>store.get('hf_rounds',[]));
   const [activeRoundId,setActiveRoundId]=useState(()=>store.get('hf_active_round',null));
   const [events,setEvents]=useState(()=>store.get('hf_events',[]));
