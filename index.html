@@ -1714,8 +1714,10 @@ function VietlottDashTab({vietData,setVietData,vietSettings}){
   const [syncing,setSyncing]=useState(false);
   const [syncMsg,setSyncMsg]=useState('');
   const [lastSynced,setLastSynced]=useState(null);
+  const startDate=vietSettings?.startDate||'1900-01-01';
+  const trackedDraws=results.filter(r=>r.date>=startDate).length;
   const totalFund=funds.filter(f=>(!f.type||f.type==='fund')).reduce((s,f)=>s+f.amount,0);
-  const totalSpent=results.length*10000+funds.filter(f=>f.type==='ticket').reduce((s,f)=>s+f.amount,0);
+  const totalSpent=trackedDraws*10000+funds.filter(f=>f.type==='ticket').reduce((s,f)=>s+f.amount,0);
   const net=totalFund-totalSpent;
   const latest645=results.filter(r=>r.type==='645').sort((a,b)=>b.date.localeCompare(a.date))[0];
   const latest655=results.filter(r=>r.type==='655').sort((a,b)=>b.date.localeCompare(a.date))[0];
@@ -1900,14 +1902,16 @@ function VietlottHistoryTab({vietData,setVietData,vietSettings}){
   );
 }
 
-function VietlottFinanceTab({vietData,setVietData,people}){
+function VietlottFinanceTab({vietData,setVietData,people,vietSettings}){
   const [showAdd,setShowAdd]=useState(false);
   const [editFund,setEditFund]=useState(null);
   const addFund=f=>{setVietData(d=>({...d,funds:[f,...d.funds]}));setShowAdd(false)};
   const saveFund=f=>{setVietData(d=>({...d,funds:d.funds.map(x=>x.id===f.id?f:x)}));setEditFund(null)};
   const delFund=id=>setVietData(d=>({...d,funds:d.funds.filter(f=>f.id!==id)}));
+  const startDate=vietSettings?.startDate||'1900-01-01';
+  const trackedDraws=vietData.results.filter(r=>r.date>=startDate).length;
   const totalFund=vietData.funds.filter(f=>(!f.type||f.type==='fund')).reduce((s,f)=>s+f.amount,0);
-  const totalSpent=vietData.results.length*10000+vietData.funds.filter(f=>f.type==='ticket').reduce((s,f)=>s+f.amount,0);
+  const totalSpent=trackedDraws*10000+vietData.funds.filter(f=>f.type==='ticket').reduce((s,f)=>s+f.amount,0);
   const remaining=totalFund-totalSpent;
   const sorted=[...vietData.funds].sort((a,b)=>b.date.localeCompare(a.date));
   return(
@@ -1966,7 +1970,7 @@ function VietlottModule({onBack,people,vietData,setVietData,vietSettings}){
           <VietlottHistoryTab vietData={vietData} setVietData={setVietData} vietSettings={vietSettings}/>
         </div>
         <div style={{display:tab==='finance'?'block':'none'}}>
-          <VietlottFinanceTab vietData={vietData} setVietData={setVietData} people={people}/>
+          <VietlottFinanceTab vietData={vietData} setVietData={setVietData} people={people} vietSettings={vietSettings}/>
         </div>
       </div>
       <div className="bottom-nav" style={{'--mod-col':COL}}>
