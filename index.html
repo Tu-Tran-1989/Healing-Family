@@ -1750,7 +1750,28 @@ function VietlottDashTab({vietData,setVietData,vietSettings}){
           {r.numbers.map(n=><div key={n} className={`ball${(userNums||[]).includes(n)?' win':''}`}>{n}</div>)}
           {r.bonus!=null&&<div className="ball bonus">{r.bonus}</div>}
         </div>
-        {(userNums||[]).length>0&&<div style={{marginTop:8,fontSize:10,color:'var(--text-muted)'}}>Your numbers: {matched} match{bonusMatch?' + bonus':''}</div>}
+        {(userNums||[]).length>0&&<>
+          <div style={{display:'flex',alignItems:'center',gap:6,margin:'10px 0 6px'}}>
+            <span style={{fontSize:10,fontWeight:700,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:.8,whiteSpace:'nowrap'}}>Your picks</span>
+            <div style={{flex:1,height:1,background:'var(--border)'}}/>
+            <span style={{fontSize:10,color:matched>0?'var(--success)':'var(--text-muted)',fontWeight:600}}>
+              {matched} match{bonusMatch?' + bonus':''}
+            </span>
+          </div>
+          <div className="balls">
+            {(userNums||[]).map(n=>{
+              const hit=r.numbers.includes(n);
+              return(
+                <div key={n} style={{
+                  width:32,height:32,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
+                  fontSize:11,fontWeight:700,border:`2px solid ${hit?'#d97706':'var(--border2)'}`,
+                  background:hit?'rgba(217,119,6,.15)':'transparent',
+                  color:hit?'#d97706':'var(--text-muted)',transition:'all .2s'
+                }}>{n}</div>
+              );
+            })}
+          </div>
+        </>}
       </div>
     );
   };
