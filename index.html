@@ -1662,17 +1662,36 @@ function AddDrawModal({onSave,onClose,vietSettings,draw}){
   );
 }
 
+const FUND_TYPES=[
+  {id:'fund',  label:'Adding Fund',  icon:'💰', color:'#d97706'},
+  {id:'ticket',label:'Buy Ticket',   icon:'🎟️', color:'#dc2626'},
+];
 function AddFundModal({people,onSave,onClose,fund}){
   const [date,setDate]=useState(fund?.date||todayStr);
   const [amount,setAmount]=useState(fund?.amount||'');
   const [person,setPerson]=useState(fund?.person||people[0]?.name||'');
+  const [type,setType]=useState(fund?.type||'fund');
   const [note,setNote]=useState(fund?.note||'');
-  const save=()=>{if(!amount||!person)return;onSave({id:fund?.id||uid(),date,amount:Number(amount),person,note:note.trim()})};
+  const save=()=>{if(!amount||!person)return;onSave({id:fund?.id||uid(),date,amount:Number(amount),person,type,note:note.trim()})};
   return(
-    <Modal title={fund?'Edit Contribution':'Add Contribution'} onClose={onClose}
+    <Modal title={fund?'Edit Entry':'Add Entry'} onClose={onClose}
       footer={<><button className="btn btn-ghost btn-full" onClick={onClose}>Cancel</button>
         <button className="btn btn-primary btn-full" onClick={save} disabled={!amount}
           style={{background:'linear-gradient(135deg,#92400e,#d97706)'}}>Save</button></>}>
+      <div className="form-group"><label className="form-label">Type</label>
+        <div style={{display:'flex',gap:8}}>
+          {FUND_TYPES.map(t=>(
+            <div key={t.id} onClick={()=>setType(t.id)} style={{
+              flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:6,
+              padding:'9px 0',borderRadius:8,cursor:'pointer',transition:'all .15s',
+              border:`2px solid ${type===t.id?t.color:'var(--border2)'}`,
+              background:type===t.id?`${t.color}18`:'transparent',
+              fontWeight:700,fontSize:12,color:type===t.id?t.color:'var(--text-muted)'}}>
+              <span>{t.icon}</span>{t.label}
+            </div>
+          ))}
+        </div>
+      </div>
       <div className="form-group"><label className="form-label">Date</label>
         <input type="date" className="form-input" value={date} onChange={e=>setDate(e.target.value)}/></div>
       <div className="form-group"><label className="form-label">Person</label>
@@ -1695,8 +1714,8 @@ function VietlottDashTab({vietData,setVietData,vietSettings}){
   const [syncing,setSyncing]=useState(false);
   const [syncMsg,setSyncMsg]=useState('');
   const [lastSynced,setLastSynced]=useState(null);
-  const totalFund=funds.reduce((s,f)=>s+f.amount,0);
-  const totalSpent=results.length*10000;
+  const totalFund=funds.filter(f=>(!f.type||f.type==='fund')).reduce((s,f)=>s+f.amount,0);
+  const totalSpent=funds.filter(f=>f.type==='ticket').reduce((s,f)=>s+f.amount,0);
   const net=totalFund-totalSpent;
   const latest645=results.filter(r=>r.type==='645').sort((a,b)=>b.date.localeCompare(a.date))[0];
   const latest655=results.filter(r=>r.type==='655').sort((a,b)=>b.date.localeCompare(a.date))[0];
@@ -1887,8 +1906,8 @@ function VietlottFinanceTab({vietData,setVietData,people}){
   const addFund=f=>{setVietData(d=>({...d,funds:[f,...d.funds]}));setShowAdd(false)};
   const saveFund=f=>{setVietData(d=>({...d,funds:d.funds.map(x=>x.id===f.id?f:x)}));setEditFund(null)};
   const delFund=id=>setVietData(d=>({...d,funds:d.funds.filter(f=>f.id!==id)}));
-  const totalFund=vietData.funds.reduce((s,f)=>s+f.amount,0);
-  const totalSpent=vietData.results.length*10000;
+  const totalFund=vietData.funds.filter(f=>(!f.type||f.type==='fund')).reduce((s,f)=>s+f.amount,0);
+  const totalSpent=vietData.funds.filter(f=>f.type==='ticket').reduce((s,f)=>s+f.amount,0);
   const remaining=totalFund-totalSpent;
   const sorted=[...vietData.funds].sort((a,b)=>b.date.localeCompare(a.date));
   return(
@@ -1899,22 +1918,28 @@ function VietlottFinanceTab({vietData,setVietData,people}){
         ))}
       </div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
-        <div className="section-label" style={{margin:0}}>Contributions</div>
+        <div className="section-label" style={{margin:0}}>Entries</div>
         <button className="btn btn-sm" style={{background:'linear-gradient(135deg,#92400e,#d97706)',color:'#fff',border:'none',minHeight:34,borderRadius:8,fontSize:11,fontWeight:700,cursor:'pointer',padding:'6px 10px'}} onClick={()=>setShowAdd(true)}>＋ Add</button>
       </div>
-      {!sorted.length&&<div className="empty"><div className="empty-icon"><Ic n="finance" size={28}/></div><div className="empty-text">No contributions yet</div></div>}
-      {sorted.map(f=>(
+      {!sorted.length&&<div className="empty"><div className="empty-icon"><Ic n="finance" size={28}/></div><div className="empty-text">No entries yet</div></div>}
+      {sorted.map(f=>{
+        const ft=FUND_TYPES.find(t=>t.id===(f.type||'fund'));
+        return(
         <div key={f.id} className="list-row">
           <span style={{fontSize:18}}>{people.find(p=>p.name===f.person)?.avatar||'👤'}</span>
-          <div style={{flex:1}}>
-            <div style={{fontSize:13,fontWeight:700,color:'var(--text)'}}>{f.person}</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{display:'flex',alignItems:'center',gap:6}}>
+              <span style={{fontSize:13,fontWeight:700,color:'var(--text)'}}>{f.person}</span>
+              <span style={{fontSize:9,fontWeight:700,padding:'1px 5px',borderRadius:4,background:`${ft.color}18`,color:ft.color,border:`1px solid ${ft.color}44`,whiteSpace:'nowrap'}}>{ft.icon} {ft.label}</span>
+            </div>
             <div style={{fontSize:10,color:'var(--text-muted)'}}>{fmtDate(f.date)}{f.note?` · ${f.note}`:''}</div>
           </div>
-          <span style={{fontFamily:"'Space Mono',monospace",fontSize:13,fontWeight:700,color:'#d97706'}}>{fmtAmt(f.amount)}</span>
+          <span style={{fontFamily:"'Space Mono',monospace",fontSize:13,fontWeight:700,color:ft.color}}>{fmtAmt(f.amount)}</span>
           <button className="icon-btn" style={{width:28,height:28,marginLeft:4}} onClick={()=>setEditFund(f)}><Ic n="edit" size={13}/></button>
           <button className="icon-btn danger" style={{width:28,height:28,marginLeft:4}} onClick={()=>delFund(f.id)}><Ic n="trash" size={13}/></button>
         </div>
-      ))}
+        );
+      })}
       {showAdd&&<AddFundModal people={people} onSave={addFund} onClose={()=>setShowAdd(false)}/>}
       {editFund&&<AddFundModal people={people} fund={editFund} onSave={saveFund} onClose={()=>setEditFund(null)}/>}
     </div>
