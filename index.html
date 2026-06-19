@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.9/babel.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 *{-webkit-tap-highlight-color:transparent}
@@ -1861,7 +1861,8 @@ function VietlottHistoryTab({vietData,setVietData,vietSettings}){
   const addDraw=r=>{setVietData(d=>({...d,results:[r,...d.results]}));setShowAdd(false)};
   const saveDraw=r=>{setVietData(d=>({...d,results:d.results.map(x=>x.id===r.id?r:x)}));setEditDraw(null)};
   const del=id=>setVietData(d=>({...d,results:d.results.filter(r=>r.id!==id)}));
-  const filtered=vietData.results.filter(r=>filter==='all'||r.type===filter).sort((a,b)=>b.date.localeCompare(a.date));
+  const cutoff=(()=>{const d=new Date();d.setDate(d.getDate()-30);return d.toISOString().slice(0,10);})();
+  const filtered=vietData.results.filter(r=>r.date>=cutoff&&(filter==='all'||r.type===filter)).sort((a,b)=>b.date.localeCompare(a.date));
   return(
     <div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginTop:16,marginBottom:8}}>
@@ -2058,16 +2059,79 @@ function SettingsScreen({onBack,people,setPeople,settings,setSettings,rounds,set
 
   const cardPts=settings.card;
   const vs=settings.vietlott;
+  const [openSection,setOpenSection]=useState(null);
+
+  // ── Backup helpers ────────────────────────────────────────────────────────
+  const getBackupList=()=>Object.keys(localStorage).filter(k=>k.startsWith('hf_backup_')).sort().reverse();
+  const downloadBackup=()=>{
+    const data={people,settings,rounds,activeRoundId,events,activeEventId,vietData,savedAt:new Date().toISOString()};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=`healing-family-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();URL.revokeObjectURL(a.href);
+  };
+  const restoreBackup=key=>{
+    try{
+      const d=JSON.parse(localStorage.getItem(key)||'null');
+      if(!d)return alert('Backup not found');
+      if(!window.confirm(`Restore backup from ${key.replace('hf_backup_','')}?\nCurrent data will be overwritten.`))return;
+      if(d.people)setPeople(d.people);
+      if(d.settings)setSettings(d.settings);
+      if(d.rounds)setRounds(d.rounds);
+      if(d.activeRoundId!==undefined)setActiveRoundId(d.activeRoundId);
+      if(d.events)setEvents(d.events);
+      if(d.activeEventId!==undefined)setActiveEventId(d.activeEventId);
+      if(d.vietData)setVietData(d.vietData);
+      alert('Restored successfully');
+    }catch(e){alert('Restore failed: '+e.message);}
+  };
+  const restoreFromFile=()=>{
+    const input=document.createElement('input');
+    input.type='file';input.accept='.json';
+    input.onchange=e=>{
+      const file=e.target.files[0];if(!file)return;
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        try{
+          const d=JSON.parse(ev.target.result);
+          if(!window.confirm('Restore from file? Current data will be overwritten.'))return;
+          if(d.people)setPeople(d.people);
+          if(d.settings)setSettings(d.settings);
+          if(d.rounds)setRounds(d.rounds);
+          if(d.activeRoundId!==undefined)setActiveRoundId(d.activeRoundId);
+          if(d.events)setEvents(d.events);
+          if(d.activeEventId!==undefined)setActiveEventId(d.activeEventId);
+          if(d.vietData)setVietData(d.vietData);
+          alert('Restored successfully');
+        }catch(ex){alert('Invalid backup file');}
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+  const toggle=key=>setOpenSection(s=>s===key?null:key);
+  const Accordion=({id,title,children})=>{
+    const open=openSection===id;
+    return(
+      <div style={{marginBottom:8,borderRadius:12,overflow:'hidden',border:'1px solid var(--border)'}}>
+        <button onClick={()=>toggle(id)} style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 14px',background:'var(--card)',border:'none',cursor:'pointer',textAlign:'left'}}>
+          <span style={{fontSize:13,fontWeight:700,color:'var(--text)'}}>{title}</span>
+          <span style={{fontSize:16,color:'var(--text-muted)',transform:open?'rotate(180deg)':'none',transition:'transform .2s',lineHeight:1}}>⌄</span>
+        </button>
+        {open&&<div style={{padding:'0 14px 14px',background:'var(--card)'}}>{children}</div>}
+      </div>
+    );
+  };
   return(
     <>
       <div className="module-header">
         <button className="back-btn" onClick={onBack}><Ic n="back" size={14}/> Home</button>
         <div className="module-name">Settings</div>
       </div>
-      <div className="screen fade">
-        {/* People */}
-        <div className="section-label" style={{marginTop:16}}>People</div>
-        <div className="card">
+      <div className="screen fade" style={{paddingTop:16}}>
+
+        <Accordion id="people" title="People">
           {people.map(p=>(
             <div key={p.id} className="settings-row">
               <div style={{display:'flex',alignItems:'center',gap:10}}>
@@ -2081,22 +2145,18 @@ function SettingsScreen({onBack,people,setPeople,settings,setSettings,rounds,set
             </div>
           ))}
           <button className="btn btn-ghost btn-full btn-sm" style={{marginTop:10}} onClick={()=>setAddPerson(true)}>＋ Add Person</button>
-        </div>
+        </Accordion>
 
-        {/* Card Game Points */}
-        <div className="section-label">Card Game Points</div>
-        <div className="card">
+        <Accordion id="cardpts" title="Card Game Points">
           {[['jackpot','Jackpot'],['first','1st Place'],['second','2nd Place'],['third','3rd Place'],['fourth','4th Place'],['penalty','Burned']].map(([k,l])=>(
             <div key={k} className="settings-row">
               <span className="settings-key">{l}</span>
               <input type="number" className="settings-val" value={cardPts[k]??''} onChange={e=>setCardPts(k,e.target.value)}/>
             </div>
           ))}
-        </div>
+        </Accordion>
 
-        {/* Vietlott */}
-        <div className="section-label">Vietlott</div>
-        <div className="card">
+        <Accordion id="vietlott" title="Vietlott">
           <div className="settings-row">
             <span className="settings-key">Tracking from</span>
             <input type="date" style={{fontFamily:"'Space Mono',monospace",fontSize:12,fontWeight:600,color:'#fbbf24',background:'var(--card2)',border:'1px solid var(--border2)',borderRadius:6,padding:'4px 8px',outline:'none',colorScheme:'dark'}}
@@ -2114,11 +2174,9 @@ function SettingsScreen({onBack,people,setPeople,settings,setSettings,rounds,set
             </div>
             <NumPicker selected={vs.nums655||[]} setSelected={v=>setVietSetting('nums655',v)} max={55} modCol="#d97706"/>
           </div>
-        </div>
+        </Accordion>
 
-        {/* Cloud Sync */}
-        <div className="section-label">Cloud Sync</div>
-        <div className="card">
+        <Accordion id="cloudsync" title="Cloud Sync">
           <div className="form-group">
             <label className="form-label">GitHub Personal Access Token</label>
             <input className="form-input" type="password" value={syncToken} onChange={e=>setSyncToken(e.target.value)} placeholder="ghp_…"/>
@@ -2132,22 +2190,47 @@ function SettingsScreen({onBack,people,setPeople,settings,setSettings,rounds,set
             <button className="btn btn-primary btn-full btn-sm" onClick={pushToCloud} disabled={syncing}><Ic n="upload" size={13}/> Push</button>
             <button className="btn btn-ghost btn-full btn-sm" onClick={pullFromCloud} disabled={syncing}><Ic n="download" size={13}/> Pull</button>
           </div>
-        </div>
-        {/* Danger Zone */}
-        <div className="section-label">Danger Zone</div>
-        <div className="card">
-          <div className="settings-row" style={{flexDirection:'column',alignItems:'flex-start',gap:6}}>
-            <span className="settings-key" style={{fontSize:12}}>Reset all app data</span>
-            <span style={{fontSize:10,color:'var(--text-muted)'}}>Clears rounds, events, Vietlott history and resets settings. People are kept.</span>
+        </Accordion>
+
+        <Accordion id="backup" title="Backup & Restore">
+          {/* Auto-backups */}
+          <div style={{fontSize:10,color:'var(--text-muted)',fontWeight:700,textTransform:'uppercase',letterSpacing:1,marginBottom:8}}>Auto-saved snapshots</div>
+          {getBackupList().length===0
+            ?<div style={{fontSize:12,color:'var(--text-muted)',marginBottom:12}}>No snapshots yet — one is saved automatically each day.</div>
+            :getBackupList().map(key=>{
+              const date=key.replace('hf_backup_','');
+              return(
+                <div key={key} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'8px 10px',marginBottom:6,borderRadius:8,background:'var(--card2)',border:'1px solid var(--border)'}}>
+                  <div>
+                    <div style={{fontSize:12,fontWeight:700}}>{date}</div>
+                    <div style={{fontSize:10,color:'var(--text-muted)'}}>Local snapshot</div>
+                  </div>
+                  <button className="btn btn-ghost btn-sm" style={{fontSize:11,padding:'4px 10px'}} onClick={()=>restoreBackup(key)}>Restore</button>
+                </div>
+              );
+            })
+          }
+          {/* Manual download / restore from file */}
+          <div style={{display:'flex',gap:8,marginTop:4}}>
+            <button className="btn btn-ghost btn-full btn-sm" onClick={downloadBackup}>⬇ Download backup</button>
+            <button className="btn btn-ghost btn-full btn-sm" onClick={restoreFromFile}>⬆ Restore from file</button>
           </div>
-          <button className="btn btn-danger btn-full btn-sm" style={{marginTop:8}} onClick={()=>{
+        </Accordion>
+
+        <Accordion id="danger" title="Danger Zone">
+          <div style={{marginBottom:8}}>
+            <span className="settings-key" style={{fontSize:12}}>Reset all app data</span>
+            <div style={{fontSize:10,color:'var(--text-muted)',marginTop:4}}>Clears rounds, events, Vietlott history and resets settings. People are kept.</div>
+          </div>
+          <button className="btn btn-danger btn-full btn-sm" onClick={()=>{
             if(!window.confirm('Reset all data? This cannot be undone.'))return;
             setRounds([]);setActiveRoundId(null);
             setEvents([]);setActiveEventId(null);
             setVietData({results:[],funds:[],extras:[]});
             setSettings(DEFAULT_SETTINGS);
           }}>Reset All Data</button>
-        </div>
+        </Accordion>
+
         <div style={{height:24}}/>
       </div>
       {(editPerson||addPerson)&&<PersonModal person={editPerson||null} onSave={savePerson} onClose={()=>{setEditPerson(null);setAddPerson(false)}}/>}
@@ -2228,6 +2311,18 @@ function App(){
   useEffect(()=>store.set('hf_events',events),[events]);
   useEffect(()=>store.set('hf_active_event',activeEventId),[activeEventId]);
   useEffect(()=>store.set('hf_viet',vietData),[vietData]);
+
+  // ── Auto-backup: save a snapshot keyed by date, keep last 3 days ──────────
+  useEffect(()=>{
+    const today=new Date().toISOString().slice(0,10);
+    const snapshot={people,settings,rounds,activeRoundId,events,activeEventId,vietData,savedAt:new Date().toISOString()};
+    try{
+      localStorage.setItem(`hf_backup_${today}`,JSON.stringify(snapshot));
+      // prune: keep only 3 most recent backup keys
+      const keys=Object.keys(localStorage).filter(k=>k.startsWith('hf_backup_')).sort().reverse();
+      keys.slice(3).forEach(k=>localStorage.removeItem(k));
+    }catch(e){/* storage full — ignore */}
+  },[people,settings,rounds,activeRoundId,events,activeEventId,vietData]);
 
   const goHome=()=>setScreen('home');
   const pts=settings.card;
